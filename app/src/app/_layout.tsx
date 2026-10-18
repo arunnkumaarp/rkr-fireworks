@@ -33,6 +33,7 @@ export default function RootLayout() {
         <Stack.Screen name="checkout" options={{ title: 'Delivery details' }} />
         <Stack.Screen name="login" options={{ title: 'Log in' }} />
         <Stack.Screen name="orders" options={{ title: 'My orders' }} />
+        <Stack.Screen name="admin" options={{ headerShown: false }} />
         <Stack.Screen name="estimate/[number]" options={{ title: 'Estimate', headerBackVisible: false }} />
       </Stack>
     </QueryClientProvider>
@@ -40,10 +41,11 @@ export default function RootLayout() {
 }
 
 function AccountLink() {
-  const signedIn = useAuth((s) => !!s.user);
+  const user = useAuth((s) => s.user);
+  const isAdmin = user?.role === 'admin';
   return (
-    <Link href="/orders" style={{ color: '#fff', fontWeight: '700', fontSize: 15, paddingHorizontal: 12 }}>
-      {signedIn ? 'My orders' : 'Log in'}
+    <Link href={isAdmin ? '/admin' : '/orders'} style={{ color: '#fff', fontWeight: '700', fontSize: 15, paddingHorizontal: 12 }}>
+      {isAdmin ? 'Shop admin' : user ? 'My orders' : 'Log in'}
     </Link>
   );
 }

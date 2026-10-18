@@ -6,17 +6,9 @@ import { Button } from '@/components/button';
 import { colors } from '@/components/theme';
 import { api } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
+import { STATUS_LABEL } from '@/lib/status';
 import { useAuth } from '@/store/auth';
 
-const STATUS_LABEL: Record<string, string> = {
-  submitted: 'Waiting for our call',
-  confirmed: 'Confirmed',
-  paid: 'Payment received',
-  packed: 'Packed',
-  dispatched: 'Dispatched',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
-};
 
 export default function OrdersScreen() {
   const user = useAuth((s) => s.user);

@@ -52,7 +52,8 @@ class Estimate(models.Model):
             super().save(update_fields=["number"])
 
     def recalculate(self, packing_percent):
-        items = list(self.items.all())
+        # Query fresh: a prefetched items cache would still hold edited or deleted rows.
+        items = list(EstimateItem.objects.filter(estimate=self))
         self.mrp_total = sum((i.mrp * i.quantity for i in items), Decimal("0"))
         self.subtotal = sum((i.amount for i in items), Decimal("0"))
         self.packing_charge = (self.subtotal * packing_percent / 100).quantize(

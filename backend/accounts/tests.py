@@ -68,3 +68,11 @@ def test_my_estimates_only_shows_own(client):
     mine = client.get("/api/v1/estimates/mine/").json()
     assert len(mine) == 1
     assert APIClient().get("/api/v1/estimates/mine/").status_code == 401
+
+
+def test_superuser_logs_in_by_email_as_admin(client):
+    User.objects.create_superuser("arun", "Owner@Example.com", "pw")
+    code = request_code(client, "owner@example.com")
+    user = client.post("/api/v1/auth/otp/verify/", {"email": "owner@example.com", "code": code}, format="json").json()["user"]
+    assert user["role"] == "admin"
+    assert User.objects.count() == 1

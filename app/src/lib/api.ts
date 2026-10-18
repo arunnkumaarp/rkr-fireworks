@@ -85,6 +85,26 @@ export type EstimateInput = Pick<
   'customer_name' | 'phone' | 'email' | 'address' | 'city' | 'state' | 'pincode' | 'notes'
 > & { lines: { product: number; quantity: number }[] };
 
+export type AdminEstimate = Omit<Estimate, 'items'> & { items: (EstimateItem & { id: number })[] };
+
+export type EstimatePatch = Partial<Pick<Estimate, 'status' | 'transport_name' | 'lr_number' | 'notes'>> & {
+  item_changes?: { id: number; quantity: number; price?: string }[];
+};
+
+export type Dashboard = {
+  today: number;
+  this_week: number;
+  awaiting_call: number;
+  to_dispatch: number;
+  confirmed_value: string | number;
+  top_products: { code: number; name: string; quantity: number }[];
+};
+
+export type AdminProduct = Pick<
+  Product,
+  'id' | 'code' | 'name' | 'category' | 'category_name' | 'mrp' | 'discount_percent' | 'offer_price' | 'unit'
+> & { is_active: boolean };
+
 /** Validation errors from DRF, flattened into readable messages. */
 export class ApiError extends Error {
   constructor(public status: number, public fields: Record<string, string[]>) {
@@ -161,5 +181,21 @@ export const api = {
       body: JSON.stringify({ email, code }),
     }),
   myEstimates: () => request<Estimate[]>('/estimates/mine/'),
+  admin: {
+    dashboard: () => request<Dashboard>('/admin/dashboard/'),
+    estimates: (params: { status?: string; search?: string }) => {
+      const q = new URLSearchParams(Object.entries(params).filter(([, v]) => v) as [string, string][]);
+      return request<Estimate[]>(`/admin/estimates/?${q}`);
+    },
+    estimate: (number: string) => request<AdminEstimate>(`/admin/estimates/${encodeURIComponent(number)}/`),
+    updateEstimate: (number: string, patch: EstimatePatch) =>
+      request<AdminEstimate>(`/admin/estimates/${encodeURIComponent(number)}/`, {
+        method: 'PATCH',
+        body: JSON.stringify(patch),
+      }),
+    products: () => request<AdminProduct[]>('/admin/products/'),
+    updateProduct: (id: number, patch: Partial<Pick<AdminProduct, 'mrp' | 'discount_percent' | 'is_active'>>) =>
+      request<AdminProduct>(`/admin/products/${id}/`, { method: 'PATCH', body: JSON.stringify(patch) }),
+  },
   estimate: (number: string) => request<Estimate>(`/estimates/${encodeURIComponent(number)}/`),
 };

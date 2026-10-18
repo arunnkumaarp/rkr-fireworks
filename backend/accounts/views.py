@@ -24,6 +24,12 @@ class VerifySerializer(EmailSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    # Superusers count as shop admins in the app too.
+    role = serializers.SerializerMethodField()
+
+    def get_role(self, user):
+        return User.Role.ADMIN if user.is_shop_admin else user.role
+
     class Meta:
         model = User
         fields = ["id", "email", "first_name", "phone", "role"]
@@ -63,7 +69,9 @@ def verify_otp(request):
     if not otp or not otp.check_code(code):
         return Response({"detail": "Wrong or expired code."}, status=status.HTTP_400_BAD_REQUEST)
 
-    user, _ = User.objects.get_or_create(username=email, defaults={"email": email})
+    # Match existing accounts by email too, so admins made with createsuperuser can log in here.
+    user = User.objects.filter(email__iexact=email).order_by("id").first() or \
+        User.objects.create(username=email, email=email)
     if not user.is_active:
         return Response({"detail": "Account disabled."}, status=status.HTTP_403_FORBIDDEN)
     refresh = RefreshToken.for_user(user)
