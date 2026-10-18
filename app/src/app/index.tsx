@@ -2,6 +2,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   ScrollView,
   SectionList,
@@ -24,6 +25,15 @@ import { useCategories, useProducts, useShopSettings } from '@/lib/queries';
 import { syncCartWithCatalogue, useCart } from '@/store/cart';
 
 export default function PriceListScreen() {
+  // On the web the public price list is the website at "/"; this screen serves the mobile apps.
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && !__DEV__) {
+    window.location.replace('/');
+    return null;
+  }
+  return <PriceList />;
+}
+
+function PriceList() {
   const products = useProducts();
   const categories = useCategories();
   const { data: shop } = useShopSettings();

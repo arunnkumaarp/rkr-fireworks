@@ -15,7 +15,17 @@ docker compose exec backend python manage.py import_products   # loads seed/prod
 docker compose exec backend python manage.py createsuperuser
 docker compose exec backend pytest
 
-cd app && cp .env.example .env && npm install && npx expo start   # w = web, a = Android, i = iOS
+cd app && cp .env.example .env && npm install && npx expo start   # a = Android, i = iOS (Expo Go)
+```
+
+**Website** (`website/`): a static page built from the price-list CSV, designed with the taste-skill
+(`.claude/skills/design-taste-frontend`, direction "split stage"). The app's web screens (cart, checkout,
+login, orders, admin) are served under `/shop` and share the cart with the page through the browser.
+
+```bash
+scripts/build-web.sh            # website + app web build into dist/
+node scripts/serve-web.mjs      # http://localhost:8081 (website at /, app at /shop)
+node .claude/skills/design-taste-frontend/scripts/inspect.mjs website/index.html   # design gate
 ```
 
 On a phone or Android emulator, set `EXPO_PUBLIC_API_URL` to your computer's LAN IP (or `http://10.0.2.2:8000/api/v1` for the emulator).
@@ -30,7 +40,7 @@ Set `DJANGO_DEBUG=0`, `DJANGO_SECRET_KEY` (long random string), `DATABASE_URL` (
 Mount a persistent disk at `/app/media` so the UPI QR upload survives redeploys. Then run
 `python manage.py import_products` once and `python manage.py createsuperuser` with your email.
 
-**Website**: `cd app && EXPO_PUBLIC_API_URL=https://<api-host>/api/v1 npx expo export --platform web`, then upload `app/dist/`
-to Vercel or Netlify as a single-page app (rewrite all paths to `/index.html`).
+**Website**: `API_URL=https://<api-host>/api/v1 scripts/build-web.sh`, then upload `dist/` to Cloudflare Pages with one
+rewrite: `/shop/*` → `/shop/index.html`.
 
 **Mobile apps**: `npx eas-cli@latest build` with the same `EXPO_PUBLIC_API_URL` (store submission is handled separately).

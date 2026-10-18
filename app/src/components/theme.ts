@@ -17,7 +17,7 @@ export const colors = {
 };
 
 // Category banners on the price list cycle through these inks, in this order.
-export const bannerColors = ['#2F4FA2', '#2E7D32', '#B0186B', '#E8590C', '#5E2B97'];
+export const bannerColors = ['#2F4FA2', '#2E7D32', '#B0186B', '#B9410A', '#5E2B97'];
 
 export const fonts = {
   display: 'Anton_400Regular',

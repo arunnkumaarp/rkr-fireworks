@@ -7,3 +7,4 @@ node_modules/
 .expo/
 dist/
 .DS_Store
+.taste-skill/

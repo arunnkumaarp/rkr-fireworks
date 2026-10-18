@@ -2,6 +2,7 @@ import { Anton_400Regular } from '@expo-google-fonts/anton';
 import { Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold, useFonts } from '@expo-google-fonts/archivo';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Link, Stack } from 'expo-router';
+import { Platform, Pressable, Text } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -52,9 +53,19 @@ export default function RootLayout() {
   );
 }
 
+const wordmarkStyle = { color: '#fff', fontFamily: fonts.display, fontSize: 24 };
+
 function Wordmark() {
+  if (Platform.OS === 'web') {
+    // The website's price list lives outside the app at the site root.
+    return (
+      <Pressable accessibilityRole="link" onPress={() => window.location.assign('/')}>
+        <Text style={wordmarkStyle}>RKR Crackers</Text>
+      </Pressable>
+    );
+  }
   return (
-    <Link href="/" style={{ color: '#fff', fontFamily: fonts.display, fontSize: 24 }}>
+    <Link href="/" style={wordmarkStyle}>
       RKR Crackers
     </Link>
   );

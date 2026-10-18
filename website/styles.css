@@ -1,0 +1,245 @@
+/* RKR Crackers — direction: the split stage (seed 1669764864).
+   Brand kept: the printed price list's red, white paper, black ink, gold and the purple back page. */
+
+@font-face { font-family: 'Anton'; src: url(fonts/anton.ttf) format('truetype'); font-display: swap; }
+@font-face { font-family: 'Archivo'; src: url(fonts/archivo-400.ttf) format('truetype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Archivo'; src: url(fonts/archivo-600.ttf) format('truetype'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Archivo'; src: url(fonts/archivo-800.ttf) format('truetype'); font-weight: 800; font-display: swap; }
+
+:root {
+  --bg: #D7261E;          /* the ground: the price list's red */
+  --paper: #FFFFFF;
+  --surface: #F2EFEF;
+  --ink: #16131A;
+  --muted: #57515B;
+  --accent: #D7261E;
+  --accent-ink: #FFFFFF;
+  --gold: #F5B800;
+  --purple: #5A1A6E;      /* the back page of the printed list (brand colour) */
+
+  --font-display: 'Anton', 'Arial Narrow', sans-serif;
+  --font-text: 'Archivo', system-ui, sans-serif;
+
+  /* five steps */
+  --step-small: 0.875rem;                          /* 14px */
+  --step-body: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --step-lead: clamp(1.25rem, 1.15rem + 0.4vw, 1.375rem);
+  --step-head: clamp(2.25rem, 1.9rem + 1vw, 2.75rem);
+  --step-display: clamp(3.25rem, 1.2rem + 6vw, 6.75rem);
+
+  --gap: 12px;
+  --pad: clamp(1.75rem, 1rem + 3vw, 4rem);
+  --radius: 0px;
+}
+
+body { background: var(--bg); color: var(--ink); }
+h1, h2, h3 { font-weight: 400; }
+.skip:focus { position: fixed; top: 8px; left: 8px; width: auto; height: auto; clip-path: none; padding: 12px; background: var(--paper); z-index: 10; }
+
+.button {
+  font-weight: 800; background: var(--accent); color: var(--accent-ink);
+  min-height: 3.25rem; padding: 0 1.75rem;
+}
+@media (hover: hover) and (pointer: fine) {
+  .button:hover { background: var(--ink); }
+}
+
+/* ---------- the split ---------- */
+.split { display: grid; grid-template-columns: 1fr; gap: var(--gap); padding: var(--gap); }
+.column { min-width: 0; display: flex; flex-direction: column; gap: var(--gap); }
+.stage { order: -1; position: sticky; top: var(--gap); height: 56svh; z-index: 0; }
+/* phone and tablet: the paper sheet slides up over the lower part of the picture */
+.split:not(.split-faq) > .column { margin-top: -16svh; }
+.column { position: relative; z-index: 1; }
+.stage-frame { position: relative; height: 100%; overflow: hidden; background: var(--paper); }
+.slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.6s var(--ease-in-out); }
+.slide.is-on { opacity: 1; }
+.slide img { width: 100%; height: 100%; object-fit: cover; background: var(--ink); }
+.slide img.contain { object-fit: contain; background: var(--paper); padding: 4% 4% 72px; }
+@media (prefers-reduced-motion: no-preference) {
+  .slide.is-on img:not(.contain) { animation: drift 14s var(--ease-soft) forwards; }
+}
+@keyframes drift { from { transform: scale(1.08); } to { transform: scale(1); } }
+
+.stage-bar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 56px; padding: 0 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: var(--paper); font-size: var(--step-small); font-weight: 600;
+}
+.stage-bar a { text-decoration: none; }
+.stage-total { color: var(--ink); }
+.stage-total.has-items { background: var(--accent); color: var(--accent-ink); margin-right: -20px; padding: 0 20px; height: 100%; display: flex; align-items: center; transition: background-color var(--t-hover) ease; }
+@media (hover: hover) and (pointer: fine) { .stage-total.has-items:hover { background: var(--ink); } }
+.stage-caption { max-width: none; position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 20px; background: var(--paper); font-size: var(--step-small); }
+
+@media (min-width: 60em) {
+  .split { grid-template-columns: 1fr 1fr; }
+  .stage { order: 0; height: calc(100svh - 2 * var(--gap)); }
+  .split:not(.split-faq) > .column { margin-top: 0; }
+}
+
+/* ---------- hero: the menu-card sheet ---------- */
+.sheet { background: var(--paper); }
+.hero { min-height: calc(100svh - 2 * var(--gap)); display: flex; flex-direction: column; padding: var(--pad); text-align: center; }
+.hero-nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; font-size: var(--step-small); font-weight: 600; }
+.hero-nav .link:first-child { justify-self: start; }
+.hero-nav .link:last-child { justify-self: end; }
+.wordmark { font-family: var(--font-display); font-size: var(--step-head); color: var(--accent); text-decoration: none; line-height: 1; }
+.hero-body { margin-top: clamp(32px, 14vh, 26%); display: flex; flex-direction: column; align-items: center; gap: 28px; padding-bottom: 12%; }
+.hero-title { font-family: var(--font-display); font-size: var(--step-display); line-height: 0.95; color: var(--accent); max-width: 9.5em; }
+.hero-text { font-size: var(--step-lead); line-height: 1.4; max-width: 30ch; }
+
+/* ---------- the price list: one tall printed sheet ---------- */
+.list-ground { padding: 18px 0; background: var(--bg); }
+.list-sheet {
+  --scallop: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='12'%3E%3Ccircle cx='12' cy='0' r='9' fill='%23D7261E'/%3E%3C/svg%3E");
+  position: relative; background: var(--paper); padding: calc(var(--pad) + 8px) var(--pad); max-width: 640px; margin: 0 auto;
+}
+.list-sheet::before, .list-sheet::after { content: ''; position: absolute; left: 0; right: 0; height: 12px; background: var(--scallop) repeat-x; }
+.list-sheet::before { top: 0; }
+.list-sheet::after { bottom: 0; transform: rotate(180deg); }
+.list-title { font-family: var(--font-display); font-size: var(--step-head); line-height: 1; text-align: center; }
+.list-note { text-align: center; margin: 14px auto 0; font-size: var(--step-body); max-width: 36ch; }
+.group { margin-top: 48px; scroll-margin-top: 16px; }
+.index { margin-top: 36px; }
+.index ul { columns: 2; column-gap: 24px; font-size: var(--step-body); }
+.index li { break-inside: avoid; padding: 3px 0; }
+.index a { text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 0.2em; transition: text-decoration-color var(--t-hover) ease, color var(--t-hover) ease; }
+@media (hover: hover) and (pointer: fine) { .index a:hover { color: var(--accent); text-decoration-color: currentColor; } }
+.banner {
+  font-family: var(--font-display); font-size: var(--step-lead); line-height: 1; color: #fff; text-align: center;
+  width: fit-content; max-width: 100%; margin: 0 auto 22px; padding: 10px 34px; background: var(--ink-band, var(--accent));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%);
+}
+.items { display: grid; gap: 12px; }
+.item { display: grid; grid-template-columns: 1fr auto 4.25rem; column-gap: 14px; align-items: center; padding: 6px 8px; margin: -6px -8px; transition: background-color var(--t-ui) ease; }
+.item.is-picked { background: #FFF3CC; }
+.item-name { grid-column: 1; font-weight: 600; font-size: var(--step-body); }
+.item-price { grid-column: 2; font-weight: 800; font-size: var(--step-body); text-align: right; }
+.item-note { grid-column: 1 / 3; font-size: var(--step-small); color: var(--muted); }
+.qty { grid-column: 3; grid-row: 1 / 3; }
+.qty input {
+  width: 100%; height: 2.75rem; border: 0; background: var(--surface); text-align: center; font-weight: 800;
+  font-size: var(--step-body); -moz-appearance: textfield; appearance: textfield; transition: background-color var(--t-hover) ease;
+}
+.qty input::-webkit-outer-spin-button, .qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.qty input:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+.item.is-picked .qty input { background: var(--gold); }
+.list-end { margin-top: 56px; text-align: center; font-size: var(--step-body); }
+.list-send { display: flex; width: fit-content; margin: 24px auto 0; }
+
+/* ---------- how it works: the receipt slip ---------- */
+.how { background: var(--gold); padding: var(--pad); display: grid; gap: 36px; }
+.how-title { font-family: var(--font-display); font-size: var(--step-head); line-height: 1; }
+.how-intro { display: grid; gap: 16px; align-content: start; }
+.how-intro p { font-size: var(--step-lead); line-height: 1.4; max-width: 30ch; }
+.how-clip { width: 100%; max-width: 426px; aspect-ratio: 426 / 234; object-fit: cover; background: var(--ink); }
+.how-clip-note { font-size: var(--step-small); }
+.slip {
+  --zig: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10'%3E%3Cpath d='M0 10 L10 0 L20 10 Z' fill='%23F5B800'/%3E%3C/svg%3E");
+  position: relative; background: var(--paper); padding: 32px 28px 52px; width: 100%; max-width: 560px; font-size: var(--step-body);
+}
+.slip::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 10px; background: var(--zig) repeat-x; }
+.slip h3 { font-family: var(--font-text); font-weight: 800; font-size: var(--step-body); margin-top: 28px; }
+.slip h3:first-child { margin-top: 0; }
+.slip .row { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; max-width: none; }
+.slip .dots { flex: 1; min-width: 16px; border-bottom: 4px dotted var(--ink); transform: translateY(-4px); opacity: 0.85; }
+.slip .row span:last-child { white-space: nowrap; }
+.slip .total { margin: 28px -28px 0; padding: 0 28px; min-height: 44px; align-items: center; justify-content: space-between; background: var(--ink); color: var(--paper); font-weight: 800; }
+
+.how-clip { margin-top: 8px; }
+
+/* ---------- showcase: square plate, spare text (breaks the split) ---------- */
+.showcase { margin: 0 var(--gap); background: var(--paper); display: grid; min-height: 88svh; }
+.plate { padding: 16px; }
+.plate img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: 50% 40%; }
+.box-text { display: flex; flex-direction: column; gap: 32px; padding: 8px 16px 16px; }
+.tabs { display: flex; gap: 22px; flex-wrap: wrap; font-size: var(--step-body); }
+.tabs button { color: var(--muted); font-weight: 600; padding: 6px 0; transition: color var(--t-hover) ease; }
+.tabs button[aria-selected='true'] { color: var(--ink); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 8px; text-decoration-color: var(--accent); }
+@media (hover: hover) and (pointer: fine) { .tabs button:hover { color: var(--ink); } }
+.box-title { font-family: var(--font-display); font-size: var(--step-head); line-height: 1; }
+.box-copy p { margin-top: 24px; font-size: var(--step-lead); line-height: 1.4; max-width: 30ch; }
+.cells { display: grid; gap: 8px; }
+.cell { min-height: 60px; display: flex; align-items: center; justify-content: center; font-weight: 800; text-decoration: none; transition: background-color var(--t-hover) ease, transform var(--t-press) var(--ease-out); }
+.cell:active { transform: scale(0.98); }
+.cell-ink { background: var(--ink); color: var(--paper); }
+.cell-tone { background: var(--surface); color: var(--ink); }
+@media (hover: hover) and (pointer: fine) {
+  .cell-ink:hover { background: var(--accent); }
+  .cell-tone:hover { background: var(--gold); }
+}
+@media (min-width: 60em) {
+  .showcase { grid-template-columns: 1fr 1fr; align-items: center; }
+  .plate { padding: 40px; }
+  .box-text { height: 100%; justify-content: space-between; padding: 64px 64px 40px 24px; }
+  .cells { grid-template-columns: 1fr 1fr; }
+  .cell { min-height: 72px; }
+}
+
+/* ---------- questions as reading text ---------- */
+.faq { background: var(--paper); padding: var(--pad); }
+.faq-title { font-family: var(--font-display); font-size: var(--step-head); line-height: 1; }
+.faq-text { margin-top: 32px; }
+.faq-text p { font-size: var(--step-body); line-height: 1.55; max-width: 46ch; }
+.faq-text p + p { margin-top: 20px; }
+.faq-text strong { font-weight: 600; }
+.split-faq .stage { display: none; }
+@media (min-width: 60em) { .split-faq .stage { display: block; } }
+
+/* ---------- contact: the number as display type ---------- */
+.contact {
+  overflow: clip;
+  margin: 0 var(--gap); min-height: 86svh; background: var(--purple); color: var(--paper);
+  display: grid; grid-template-rows: auto 1fr auto; padding: 24px clamp(16px, 2.5vw, 40px);
+}
+.contact-ask { font-size: var(--step-lead); max-width: 26ch; }
+.contact-number {
+  /* fitted so the eleven characters run margin to margin */
+  align-self: end; margin-bottom: 6vh; font-family: var(--font-display); font-size: calc((100vw - 2 * var(--gap) - 2 * clamp(16px, 2.5vw, 40px)) / 5.35); line-height: 0.85; max-width: 100%;
+  color: var(--gold); text-decoration: none; white-space: nowrap; transition: color var(--t-hover) ease;
+}
+@media (hover: hover) and (pointer: fine) { .contact-number:hover { color: var(--paper); } }
+.contact-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; font-size: var(--step-small); }
+.contact-foot p { max-width: none; }
+
+/* ---------- footer: photograph half, menu half ---------- */
+.footer { margin: var(--gap); display: grid; background: var(--paper); }
+.footer-photo img { width: 100%; height: 50svh; object-fit: cover; object-position: 30% 40%; }
+.footer-menu { padding: 32px 20px 24px; display: flex; flex-direction: column; gap: 32px; }
+.footer-mark { font-family: var(--font-display); font-size: var(--step-lead); color: var(--accent); }
+.footer-menu nav { display: grid; gap: 14px; }
+.footer-menu nav a { font-weight: 800; font-size: var(--step-head); line-height: 1.05; text-decoration: none; width: fit-content; transition: transform var(--t-ui) var(--ease-out), color var(--t-hover) ease; }
+@media (hover: hover) and (pointer: fine) {
+  .footer-menu nav:hover a { color: var(--muted); }
+  .footer-menu nav a:hover { color: var(--accent); transform: translateX(12px); }
+}
+.footer-blocks { display: grid; gap: 16px; font-size: var(--step-small); }
+.footer-blocks a { font-weight: 600; }
+.credits { font-size: var(--step-small); color: var(--muted); max-width: 70ch; }
+.credits a { color: inherit; }
+@media (min-width: 60em) {
+  .footer { grid-template-columns: 1fr 1fr; min-height: calc(100svh - 2 * var(--gap)); }
+  .footer-photo img { height: 100%; }
+  .footer-menu { padding: 64px 48px 32px; justify-content: space-between; }
+  .footer-blocks { grid-template-columns: 1fr 1fr; gap: 32px; }
+}
+
+/* ---------- phone: the estimate total that follows you ---------- */
+.phone-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: var(--ink); color: var(--paper); font-weight: 800;
+}
+.phone-bar[hidden] { display: none; }
+.phone-bar .button { min-height: 2.75rem; padding: 0 1.1rem; }
+@media (min-width: 60em) { .phone-bar { display: none !important; } }
+
+/* sections are further apart than anything inside them */
+.showcase, .contact { margin-top: clamp(48px, 8vw, 120px); }
+.split-faq { margin-top: clamp(36px, 7vw, 108px); }
+
+/* phone: the wordmark alone heads the sheet */
+@media (max-width: 40em) {
+  .hero-nav { grid-template-columns: 1fr; justify-items: center; }
+  .hero-nav .link { display: none; }
+}
