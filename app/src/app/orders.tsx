@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { Redirect, router } from 'expo-router';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
+import { PressScale } from '@/components/press-scale';
 import { colors, fonts } from '@/components/theme';
 import { api } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
@@ -34,10 +35,10 @@ export default function OrdersScreen() {
         </View>
       }
       renderItem={({ item }) => (
-        <Pressable
+        <PressScale scaleTo={0.97}
           accessibilityRole="button"
           onPress={() => router.push({ pathname: '/estimate/[number]', params: { number: item.number } })}
-          style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
+          style={styles.card}>
           <View style={styles.cardTop}>
             <Text style={styles.number}>{item.number}</Text>
             <Text style={styles.total}>{formatRupees(item.total)}</Text>
@@ -50,7 +51,7 @@ export default function OrdersScreen() {
             {new Date(item.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} ·{' '}
             {item.items.length} products
           </Text>
-        </Pressable>
+        </PressScale>
       )}
       ListFooterComponent={<Button title="Log out" variant="secondary" onPress={signOut} style={styles.logout} />}
     />

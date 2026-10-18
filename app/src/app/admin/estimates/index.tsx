@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { colors, fonts } from '@/components/theme';
 import { api } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
 import { ADMIN_STATUS_LABEL, STATUSES } from '@/lib/status';
+import { PressScale } from '@/components/press-scale';
 
 export default function AdminEstimates() {
   const params = useLocalSearchParams<{ status?: string }>();
@@ -36,7 +37,7 @@ export default function AdminEstimates() {
           />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
             {['', ...STATUSES].map((s) => (
-              <Pressable
+              <PressScale scaleTo={0.97}
                 key={s || 'all'}
                 accessibilityRole="button"
                 accessibilityState={{ selected: status === s }}
@@ -45,7 +46,7 @@ export default function AdminEstimates() {
                 <Text style={[styles.chipText, status === s && styles.chipTextActive]}>
                   {s ? ADMIN_STATUS_LABEL[s] : 'All'}
                 </Text>
-              </Pressable>
+              </PressScale>
             ))}
           </ScrollView>
         </View>
@@ -56,10 +57,10 @@ export default function AdminEstimates() {
         </Text>
       }
       renderItem={({ item }) => (
-        <Pressable
+        <PressScale scaleTo={0.97}
           accessibilityRole="button"
           onPress={() => router.push({ pathname: '/admin/estimates/[number]', params: { number: item.number } })}
-          style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
+          style={styles.card}>
           <View style={styles.cardTop}>
             <Text style={styles.number}>{item.number}</Text>
             <Text style={styles.total}>{formatRupees(item.total)}</Text>
@@ -71,7 +72,7 @@ export default function AdminEstimates() {
             {ADMIN_STATUS_LABEL[item.status] ?? item.status} ·{' '}
             {new Date(item.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}
           </Text>
-        </Pressable>
+        </PressScale>
       )}
     />
   );

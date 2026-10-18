@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
-  Pressable,
   ScrollView,
   SectionList,
   StyleSheet,
@@ -23,6 +22,7 @@ import { colors, fonts, MAX_CONTENT_WIDTH, WIDE_BREAKPOINT } from '@/components/
 import type { Product } from '@/lib/api';
 import { useCategories, useProducts, useShopSettings } from '@/lib/queries';
 import { syncCartWithCatalogue, useCart } from '@/store/cart';
+import { PressScale } from '@/components/press-scale';
 
 export default function PriceListScreen() {
   // On the web the public price list is the website at "/"; this screen serves the mobile apps.
@@ -141,13 +141,13 @@ function PriceList() {
 
 function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
   return (
-    <Pressable
+    <PressScale scaleTo={0.94}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       onPress={onPress}
       style={[styles.chip, active && styles.chipActive]}>
       <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
-    </Pressable>
+    </PressScale>
   );
 }
 

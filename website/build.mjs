@@ -100,6 +100,7 @@ const html = template
   .replaceAll('{{MIN_ORDER}}', inr0(MIN_ORDER))
   .replaceAll('{{COUNT}}', String(products.length))
   .replace('{{JUMP}}', groups.map((g) => `<option value="${slug(g.name)}">${esc(g.name)} (${g.items.length})</option>`).join(''))
+  .replace('{{MARQUEE}}', [0, 1].map((k) => groups.map((g) => `<a href="#${slug(g.name)}"${k ? ' tabindex="-1" aria-hidden="true"' : ''}>${esc(g.name)}</a><span class="dot" aria-hidden="true"></span>`).join('')).join(''))
   .replace('{{LIST}}', list)
   .replace('{{BOX_CAPTION}}', esc(boxCaption))
   .replace('{{FAQ}}', faq.map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join('\n          '))

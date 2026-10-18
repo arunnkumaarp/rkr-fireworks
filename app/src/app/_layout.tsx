@@ -42,6 +42,8 @@ export default function RootLayout() {
           // The bar is a plain wordmark that always leads home; `title` still names the browser tab.
           headerTitle: () => <Wordmark />,
           contentStyle: { backgroundColor: colors.background },
+          animation: 'slide_from_right',
+          animationDuration: 280,
         }}>
         <Stack.Screen name="index" options={{ title: 'RKR Crackers', headerRight: () => <AccountLink /> }} />
         <Stack.Screen name="cart" options={{ title: 'Your cart' }} />

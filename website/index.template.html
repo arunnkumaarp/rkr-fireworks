@@ -18,12 +18,13 @@
 <body data-api="{{API_URL}}" data-shop="{{SHOP_URL}}" data-min="1000">
   <a class="skip sr-only" href="#list">Skip to the price list</a>
 
-  <nav class="top" aria-label="Main">
+  <nav class="top" aria-label="Main" data-top>
+    <a class="top-mark" href="#top">rkr crackers</a>
     <a class="link only-wide" href="#list">Price list</a>
     <a class="link only-wide" href="#how">How it works</a>
     <a class="link only-wide" href="#boxes">Gift boxes</a>
     <a class="link only-wide" href="#questions">Questions</a>
-    <a class="button top-action" href="#list">Start your order</a>
+    <a class="button top-action" href="#list" data-magnet>Start your order <span class="arrow" aria-hidden="true">→</span></a>
   </nav>
 
   <header class="hero" id="top">
@@ -33,10 +34,21 @@
     <div class="hero-copy">
       <p class="hero-statement" data-rise style="--i:0">Every cracker, 80% off.</p>
       <p class="hero-text" data-rise style="--i:1">Diwali 2026: all {{COUNT}} items from our price list. Pick your quantities, send an estimate, and we call you to confirm. No online payment.</p>
-      <a class="button" href="#list" data-rise style="--i:2">Start your order</a>
+      <a class="button" href="#list" data-rise style="--i:2" data-magnet>Start your order <span class="arrow" aria-hidden="true">→</span></a>
     </div>
-    <h1 class="hero-name" aria-label="RKR Crackers">rkr crackers</h1>
+    <h1 class="hero-name" aria-label="RKR Crackers" data-split>rkr crackers</h1>
   </header>
+
+  <div class="marquee" aria-label="Categories">
+    <div class="marquee-track" data-marquee>{{MARQUEE}}</div>
+  </div>
+
+  <section class="figures" aria-label="At a glance">
+    <p class="figure" data-reveal style="--d:0"><span class="figure-n nums" data-count="220">220</span><span class="figure-l">crackers on the list</span></p>
+    <p class="figure" data-reveal style="--d:1"><span class="figure-n nums" data-count="80" data-suffix="%">80%</span><span class="figure-l">off every MRP</span></p>
+    <p class="figure" data-reveal style="--d:2"><span class="figure-n nums" data-count="23">23</span><span class="figure-l">categories, from sparklers to gift boxes</span></p>
+    <p class="figure" data-reveal style="--d:3"><span class="figure-n nums">₹0</span><span class="figure-l">to pay online: we call first</span></p>
+  </section>
 
   <section class="list" id="list" aria-labelledby="list-title">
     <div class="list-head">
@@ -119,7 +131,7 @@
           {{FAQ}}
       </div>
       <div class="faq-actions" data-reveal>
-        <a class="button" href="#list">Start your order</a>
+        <a class="button" href="#list" data-magnet>Start your order <span class="arrow" aria-hidden="true">→</span></a>
         <a class="link-plain nums" href="tel:+91{{PHONE1}}">or call {{PHONE1_FMT}}</a>
       </div>
     </div>
@@ -146,10 +158,11 @@
   </footer>
 
   <div class="estimate-bar" data-bar hidden>
-    <p class="nums"><span data-total-text></span></p>
-    <a class="button" href="{{SHOP_URL}}/cart" data-send>Send estimate</a>
+    <p class="nums"><span class="bar-total" data-total-text></span></p>
+    <a class="button" href="{{SHOP_URL}}/cart" data-send>Send estimate <span class="arrow" aria-hidden="true">→</span></a>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js" defer></script>
   <script src="base.js" defer></script>
   <script src="app.js" defer></script>
 </body>

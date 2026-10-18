@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { MAX_QTY } from '@/store/cart';
 
 import { colors, fonts } from './theme';
+import { PressScale } from './press-scale';
 
 type Props = { value: number; onChange: (qty: number) => void; label: string };
 
@@ -18,14 +19,14 @@ export function QtyInput({ value, onChange, label }: Props) {
 
   return (
     <View style={styles.row}>
-      <Pressable
+      <PressScale scaleTo={0.85}
         accessibilityRole="button"
         accessibilityLabel={`Decrease ${label}`}
         onPress={() => onChange(value - 1)}
         disabled={value === 0}
         style={[styles.btn, value === 0 && styles.btnDisabled]}>
         <Text style={styles.btnText}>−</Text>
-      </Pressable>
+      </PressScale>
       <TextInput
         accessibilityLabel={`Quantity of ${label}`}
         value={text}
@@ -39,13 +40,13 @@ export function QtyInput({ value, onChange, label }: Props) {
         onBlur={() => onChange(Number(text) || 0)}
         style={[styles.input, value > 0 && styles.inputActive]}
       />
-      <Pressable
+      <PressScale scaleTo={0.85}
         accessibilityRole="button"
         accessibilityLabel={`Increase ${label}`}
         onPress={() => onChange(value + 1)}
         style={[styles.btn, styles.btnPlus]}>
         <Text style={[styles.btnText, styles.btnPlusText]}>+</Text>
-      </Pressable>
+      </PressScale>
     </View>
   );
 }

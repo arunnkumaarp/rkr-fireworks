@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { QtyInput } from '@/components/qty-input';
@@ -9,6 +9,7 @@ import { colors, fonts } from '@/components/theme';
 import { api, type AdminEstimate, type EstimatePatch } from '@/lib/api';
 import { formatRupees, toPaise } from '@/lib/format';
 import { ADMIN_STATUS_LABEL, STATUSES } from '@/lib/status';
+import { PressScale } from '@/components/press-scale';
 
 type Draft = {
   status: string;
@@ -100,14 +101,14 @@ export default function AdminEstimateDetail() {
         <Text style={styles.heading}>Status</Text>
         <View style={styles.chips}>
           {STATUSES.map((s) => (
-            <Pressable
+            <PressScale scaleTo={0.94}
               key={s}
               accessibilityRole="button"
               accessibilityState={{ selected: draft.status === s }}
               onPress={() => setDraft({ ...draft, status: s })}
               style={[styles.chip, draft.status === s && styles.chipActive]}>
               <Text style={[styles.chipText, draft.status === s && styles.chipTextActive]}>{ADMIN_STATUS_LABEL[s]}</Text>
-            </Pressable>
+            </PressScale>
           ))}
         </View>
         <View style={styles.actions}>

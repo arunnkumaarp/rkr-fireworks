@@ -69,8 +69,9 @@ a { text-underline-offset: 0.2em; }
   .hero-photo { grid-row: 1 / 3; grid-column: 1; height: calc(100svh - 40px); position: sticky; top: 20px; }
   .hero-copy { grid-column: 2; grid-row: 1; align-self: center; justify-self: center; padding: 0 var(--margin); max-width: 30rem; margin-top: -6svh; }
   .hero-statement { font-size: var(--step-head); line-height: 0.95; letter-spacing: -0.02em; max-width: 12ch; }
+  .hero { height: 100svh; }
   .hero-name {
-    grid-column: 1 / 3; grid-row: 2; justify-self: end; margin: 0 var(--margin) 20px 0;
+    position: absolute; right: var(--margin); bottom: 28px; margin: 0;
     font-size: clamp(7rem, 11.5vw, 14rem);
   }
 }
@@ -219,7 +220,7 @@ ol.moments {
 .accordion details[open] summary::after { transform: rotate(45deg); }
 .accordion details p { padding: 0 20px 18px; color: var(--muted); font-size: var(--step-body); }
 .faq-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; }
-.faq-pictures { position: relative; padding-bottom: 12%; }
+.faq-pictures { position: relative; padding-bottom: 12%; overflow: clip; }
 .faq-pictures .tall { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius); }
 .faq-pictures .square { position: absolute; right: 0; bottom: 0; width: 38%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius); outline: 8px solid var(--bg); }
 @media (min-width: 60em) {
@@ -262,7 +263,6 @@ ol.moments {
   padding: 8px 8px 8px 20px; border-radius: 999px; background: var(--surface-2); color: var(--ink);
   max-width: 40rem; margin: 0 auto; font-weight: 500; font-size: var(--step-body);
 }
-.estimate-bar[hidden] { display: none; }
 .estimate-bar p { max-width: none; }
 .estimate-bar .button { min-height: 2.75rem; }
 body.has-bar { padding-bottom: 96px; }
@@ -270,4 +270,105 @@ body.has-bar { padding-bottom: 96px; }
 /* entrances: each part arrives in turn */
 @media (prefers-reduced-motion: no-preference) {
   .js [data-reveal] { transition-delay: calc(var(--d, 0) * 80ms); }
+}
+
+/* ================= motion & feel ================= */
+@view-transition { navigation: auto; }   /* smooth fade into the /shop pages where supported */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+
+/* buttons: lift on hover, give on press, the arrow leads */
+.button { position: relative; overflow: hidden; gap: 10px; isolation: isolate;
+  transition: transform 260ms var(--ease-out), background-color 240ms ease, color 240ms ease; }
+.button .arrow { display: inline-block; transition: transform 320ms var(--ease-out); }
+.button::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--ink);
+  transform: translateY(101%); transition: transform 420ms var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .button:hover { background: var(--accent); color: var(--accent-ink); }
+  .button:hover::before { transform: none; }
+  .button:hover .arrow { transform: translateX(5px); }
+}
+.button:active { transform: scale(0.95); transition-duration: 120ms; }
+.ripple { position: absolute; border-radius: 50%; pointer-events: none; background: currentColor; opacity: 0.25;
+  transform: scale(0.05); animation: ripple 600ms var(--ease-out) forwards; }
+@keyframes ripple { to { transform: scale(1); opacity: 0; } }
+
+a, button, summary { -webkit-tap-highlight-color: transparent; }
+.link { position: relative; text-decoration: none; }
+.link::after { content: ''; position: absolute; left: 0; right: 0; bottom: -4px; height: 1.5px; background: currentColor;
+  transform: scaleX(0); transform-origin: right; transition: transform 380ms var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .link:hover::after { transform: scaleX(1); transform-origin: left; } }
+
+/* sticky nav: appears once the first screen has passed */
+.top-mark { font-family: var(--font-display); font-size: var(--step-lead); color: var(--ink); text-decoration: none; margin-right: auto;
+  opacity: 0; transform: translateY(-6px); transition: opacity 300ms ease, transform 400ms var(--ease-out); }
+.top { left: 0; transition: background-color 300ms ease, padding 300ms var(--ease-out), transform 400ms var(--ease-out); }
+.top.is-stuck { position: fixed; background: rgba(15, 13, 12, 0.94); padding-block: 10px; }
+.top.is-stuck .top-mark { opacity: 1; transform: none; }
+.top.is-hidden { transform: translateY(-100%); }
+
+/* hero: the name rises letter by letter, the photo opens */
+.hero-name .ch { display: inline-block; }
+@media (prefers-reduced-motion: no-preference) {
+  .js .hero-name .ch { transform: translateY(105%); opacity: 0; animation: ch-in 700ms var(--ease-out) forwards;
+    animation-delay: calc(var(--c) * 30ms + 120ms); }
+  .js .hero-photo { clip-path: inset(100% 0 0 0 round var(--radius)); animation: open 950ms var(--ease-in-out) forwards; }
+}
+.hero-name { overflow: hidden; padding: 0.06em 0 0.08em; }
+.hero-name .ch { line-height: 0.8; vertical-align: bottom; }
+@keyframes ch-in { to { transform: none; opacity: 1; } }
+@keyframes open { to { clip-path: inset(0 0 0 0 round var(--radius)); } }
+
+/* category strip */
+.marquee { margin-top: clamp(40px, 6vw, 80px); overflow: hidden; padding: 18px 0; background: var(--surface); }
+.marquee-track { display: flex; width: max-content; gap: 28px; align-items: center; white-space: nowrap;
+  font-family: var(--font-display); font-size: var(--step-lead); }
+.marquee-track a { color: var(--ink); text-decoration: none; transition: color 200ms ease; }
+.marquee-track a:hover { color: var(--accent); }
+.marquee-track .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .marquee-track { animation: marquee 60s linear infinite; }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+}
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+/* figures */
+.figures { display: grid; grid-template-columns: 1fr 1fr; gap: 32px var(--margin); padding: clamp(64px, 9vw, 120px) var(--margin) 0; }
+.figure { display: grid; gap: 6px; max-width: none; }
+.figure-n { font-family: var(--font-display); font-size: var(--step-head); line-height: 1; color: var(--ink); }
+.figure-l { color: var(--muted); font-size: var(--step-body); max-width: 22ch; }
+@media (min-width: 60em) { .figures { grid-template-columns: repeat(4, 1fr); } }
+
+/* price rows: hover, add feedback */
+@media (hover: hover) and (pointer: fine) { .row:hover { background: var(--surface-2); } }
+.row { transition: background-color 220ms ease; }
+.r-qty input.bump { animation: bump 320ms var(--ease-out); }
+@keyframes bump { 40% { transform: scale(1.35); } }
+.step { transition: background-color 180ms ease, color 180ms ease, transform 140ms var(--ease-out); }
+.step:active { transform: scale(0.85); }
+
+/* estimate bar slides up; the total ticks */
+.estimate-bar { transition: transform 520ms cubic-bezier(0.34, 1.4, 0.64, 1), opacity 300ms ease; box-shadow: 0 16px 40px rgba(0,0,0,0.45); } /* taste-skill-ignore: floating bar */
+.estimate-bar[hidden] { display: flex; transform: translateY(140%); opacity: 0; pointer-events: none; }
+.bar-total.tick { animation: tick 380ms var(--ease-out); }
+@keyframes tick { 40% { color: var(--accent); transform: translateY(-2px); } }
+.bar-total { display: inline-block; }
+
+/* pictures settle in from a mask */
+@media (prefers-reduced-motion: no-preference) {
+  .js .moment[data-reveal] img, .js .moment[data-reveal] video, .js .panel[data-reveal] img, .js .faq-pictures[data-reveal] img {
+    clip-path: inset(18% 0 0 0); transform: scale(1.1); transition: clip-path 1100ms var(--ease-in-out), transform 1500ms var(--ease-soft); }
+  .js .is-in img, .js .is-in video, .js .moment.is-in img, .js .panel.is-in img, .js .faq-pictures.is-in img { clip-path: inset(0); transform: none; }
+}
+.moment img, .moment video, .faq-pictures img { transition: transform 700ms var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .moment:hover img, .moment:hover video { transform: scale(1.03); } }
+
+/* accordion opens smoothly */
+.accordion details { transition: background-color 240ms ease; }
+.accordion details:hover { background: var(--surface-2); }
+.accordion details[open] p { animation: drop 360ms var(--ease-out); }
+@keyframes drop { from { opacity: 0; transform: translateY(-6px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }

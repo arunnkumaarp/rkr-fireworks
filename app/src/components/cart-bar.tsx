@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { formatRupees } from '@/lib/format';
@@ -7,6 +7,7 @@ import { useShopSettings } from '@/lib/queries';
 import { cartTotals, useCart } from '@/store/cart';
 
 import { colors, MAX_CONTENT_WIDTH, fonts } from './theme';
+import { PressScale } from './press-scale';
 
 export function CartBar() {
   const lines = useCart((s) => s.lines);
@@ -30,9 +31,9 @@ export function CartBar() {
             <Text style={styles.warn}>Add {formatRupees(shortBy)} more (min. order {formatRupees(minOrder)})</Text>
           )}
         </View>
-        <Pressable accessibilityRole="button" onPress={() => router.push('/cart')} style={styles.btn}>
+        <PressScale scaleTo={0.94} accessibilityRole="button" onPress={() => router.push('/cart')} style={styles.btn}>
           <Text style={styles.btnText}>View cart</Text>
-        </Pressable>
+        </PressScale>
       </View>
     </View>
   );

@@ -17,6 +17,7 @@ export default function AdminLayout() {
         headerTintColor: colors.text,
         headerTitleStyle: { fontFamily: fonts.display, fontSize: 22 },
         contentStyle: { backgroundColor: colors.background },
+        animation: 'slide_from_right',
         headerRight: () => (
           <Link href="/" style={{ color: colors.gold, fontFamily: fonts.textSemi, fontSize: 15, paddingHorizontal: 12 }}>
             View shop
