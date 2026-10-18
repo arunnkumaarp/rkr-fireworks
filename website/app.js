@@ -24,18 +24,21 @@
   let lastTotal = '';
   const pulse = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); };
   const totalText = document.querySelector('[data-total-text]');
+  const saveText = document.querySelector('[data-save-text]');
+  const countBadge = document.querySelector('[data-count-badge]');
 
   function render() {
-    let sum = 0, items = 0, products = 0;
+    let sum = 0, items = 0, products = 0, mrp = 0;
     rows.forEach((r) => {
       const q = clampQty(r.input.value);
       r.el.classList.toggle('is-picked', q > 0);
-      if (q > 0 && r.product) { sum += paise(r.product.offer_price) * q; items += q; products += 1; }
+      if (q > 0 && r.product) { sum += paise(r.product.offer_price) * q; mrp += paise(r.product.mrp) * q; items += q; products += 1; }
     });
     const short = MIN * 100 - sum;
-    totalText.textContent = short > 0
-      ? `${inr(sum / 100)} · add ${inr(short / 100)} more`
-      : `${inr(sum / 100)} · ${items} item${items === 1 ? '' : 's'}`;
+    totalText.textContent = inr(sum / 100);
+    saveText.textContent = short > 0 ? `Add ₹${Math.ceil(short / 100).toLocaleString('en-IN')} more` : `Saved ₹${Math.round((mrp - sum) / 100).toLocaleString('en-IN')}`;
+    saveText.classList.toggle('is-short', short > 0);
+    countBadge.textContent = String(items);
     if (totalText.textContent !== lastTotal) { lastTotal = totalText.textContent; pulse(totalText, 'tick'); }
     bar.hidden = products === 0;
     body.classList.toggle('has-bar', products > 0);
@@ -54,6 +57,11 @@
   rows.forEach((r) => {
     r.input.addEventListener('input', update);
     r.input.addEventListener('change', () => { const v = clampQty(r.input.value); r.input.value = v ? String(v) : ''; update(); });
+    r.el.querySelector('[data-add]').addEventListener('click', () => {
+      r.input.value = '1';
+      update();
+      r.el.querySelector('[data-step="1"]').focus({ preventScroll: true });
+    });
     r.el.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => {
       const v = clampQty(clampQty(r.input.value) + Number(b.dataset.step));
       r.input.value = v ? String(v) : '';
@@ -101,11 +109,6 @@
       shown += inGroup;
     });
     empty.hidden = shown > 0;
-  });
-  document.querySelector('[data-jump]').addEventListener('change', (e) => {
-    const target = document.getElementById(e.target.value);
-    if (target) target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
-    e.target.value = '';
   });
 
   // ---------- the row of moments ----------
@@ -210,4 +213,22 @@
     }), { threshold: 0.6 });
     counters.forEach((c) => io.observe(c));
   }
+})();
+
+// ---------- category bar: follows the list, highlights where you are ----------
+(() => {
+  const nav = document.querySelector('[data-catnav]');
+  if (!nav || !('IntersectionObserver' in window)) return;
+  const links = new Map([...nav.querySelectorAll('[data-cat]')].map((a) => [a.dataset.cat, a]));
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      links.forEach((a) => a.classList.remove('is-on'));
+      const a = links.get(e.target.id);
+      if (!a) continue;
+      a.classList.add('is-on');
+      nav.scrollTo({ left: a.offsetLeft - nav.clientWidth / 2 + a.clientWidth / 2, behavior: 'smooth' });
+    }
+  }, { rootMargin: '-30% 0px -65% 0px' });
+  document.querySelectorAll('[data-group]').forEach((g) => io.observe(g));
 })();

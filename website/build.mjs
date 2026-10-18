@@ -67,6 +67,7 @@ const list = groups
               <span class="r-mrp nums"><s data-mrp>${inr(p.mrp)}</s></span>
               <span class="r-price nums"><span data-price>${inr(p.offer)}</span> <span class="r-unit">/ ${esc(p.unit.toLowerCase())}</span></span>
               <span class="r-qty">
+                <button type="button" class="add" data-add aria-label="Add ${esc(p.name)}">Add</button>
                 <button type="button" class="step" data-step="-1" aria-label="One less ${esc(p.name)}">−</button>
                 <input type="number" inputmode="numeric" min="0" max="999" placeholder="0" aria-label="Quantity of ${esc(p.name)}" data-qty>
                 <button type="button" class="step" data-step="1" aria-label="One more ${esc(p.name)}">+</button>
@@ -99,8 +100,8 @@ const html = template
   .replaceAll('{{PHONE2_FMT}}', phone(PHONES[1]))
   .replaceAll('{{MIN_ORDER}}', inr0(MIN_ORDER))
   .replaceAll('{{COUNT}}', String(products.length))
-  .replace('{{JUMP}}', groups.map((g) => `<option value="${slug(g.name)}">${esc(g.name)} (${g.items.length})</option>`).join(''))
   .replace('{{MARQUEE}}', [0, 1].map((k) => groups.map((g) => `<a href="#${slug(g.name)}"${k ? ' tabindex="-1" aria-hidden="true"' : ''}>${esc(g.name)}</a><span class="dot" aria-hidden="true"></span>`).join('')).join(''))
+  .replace('{{CATNAV}}', groups.map((g) => `<a href="#${slug(g.name)}" data-cat="${slug(g.name)}">${esc(g.name)}</a>`).join(''))
   .replace('{{LIST}}', list)
   .replace('{{BOX_CAPTION}}', esc(boxCaption))
   .replace('{{FAQ}}', faq.map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join('\n          '))

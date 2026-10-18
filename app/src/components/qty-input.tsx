@@ -17,67 +17,82 @@ export function QtyInput({ value, onChange, label }: Props) {
     setText(value ? String(value) : '');
   }
 
+  if (value === 0) {
+    return (
+      <PressScale
+        scaleTo={0.9}
+        accessibilityRole="button"
+        accessibilityLabel={`Add ${label}`}
+        onPress={() => onChange(1)}
+        style={styles.add}>
+        <Text style={styles.addText}>Add</Text>
+      </PressScale>
+    );
+  }
+
   return (
     <View style={styles.row}>
-      <PressScale scaleTo={0.85}
+      <PressScale
+        scaleTo={0.8}
         accessibilityRole="button"
         accessibilityLabel={`Decrease ${label}`}
         onPress={() => onChange(value - 1)}
-        disabled={value === 0}
-        style={[styles.btn, value === 0 && styles.btnDisabled]}>
+        style={styles.btn}>
         <Text style={styles.btnText}>−</Text>
       </PressScale>
       <TextInput
         accessibilityLabel={`Quantity of ${label}`}
         value={text}
-        placeholder="0"
-        placeholderTextColor={colors.muted}
         keyboardType="number-pad"
         maxLength={String(MAX_QTY).length}
         selectTextOnFocus
         onChangeText={(t) => setText(t.replace(/\D/g, ''))}
         onEndEditing={() => onChange(Number(text) || 0)}
         onBlur={() => onChange(Number(text) || 0)}
-        style={[styles.input, value > 0 && styles.inputActive]}
+        style={styles.input}
       />
-      <PressScale scaleTo={0.85}
+      <PressScale
+        scaleTo={0.8}
         accessibilityRole="button"
         accessibilityLabel={`Increase ${label}`}
         onPress={() => onChange(value + 1)}
-        style={[styles.btn, styles.btnPlus]}>
-        <Text style={[styles.btnText, styles.btnPlusText]}>+</Text>
+        style={styles.btn}>
+        <Text style={styles.btnText}>+</Text>
       </PressScale>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  btn: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
+  add: {
+    width: 112,
+    height: 40,
+    borderRadius: 999,
+    backgroundColor: colors.sectionBg,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.sectionBg,
   },
-  btnDisabled: { opacity: 0.4 },
-  btnPlus: { backgroundColor: colors.primary, borderColor: colors.primary },
-  btnText: { fontFamily: fonts.textSemi, fontSize: 18, color: colors.text, lineHeight: 20 },
-  btnPlusText: { color: colors.onPrimary },
+  addText: { fontFamily: fonts.textBold, fontSize: 16, color: colors.gold },
+  row: {
+    width: 112,
+    height: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 999,
+    backgroundColor: colors.gold,
+    paddingHorizontal: 2,
+  },
+  btn: { width: 36, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  btnText: { fontFamily: fonts.textBold, fontSize: 20, lineHeight: 22, color: colors.onPrimary },
   input: {
-    width: 44,
-    height: 32,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
+    width: 36,
+    minWidth: 0,
+    height: 36,
     textAlign: 'center',
-    fontFamily: fonts.textSemi, fontSize: 15,
-    color: colors.text,
-    backgroundColor: colors.surface,
+    fontFamily: fonts.textBold,
+    fontSize: 16,
+    color: colors.onPrimary,
     padding: 0,
   },
-  inputActive: { borderColor: colors.primary, backgroundColor: colors.sectionBg },
 });

@@ -56,11 +56,9 @@
       <p class="list-note" data-reveal>MRP struck through, our price beside it. Minimum order {{MIN_ORDER}}.</p>
       <div class="list-tools" data-reveal>
         <label class="search"><span class="sr-only">Search crackers</span><input type="search" placeholder="Search {{COUNT}} crackers by name or code" data-search></label>
-        <label class="jump"><span class="sr-only">Jump to a category</span>
-          <select data-jump><option value="">Jump to a category</option>{{JUMP}}</select>
-        </label>
       </div>
     </div>
+    <nav class="cat-nav" aria-label="Categories" data-catnav>{{CATNAV}}</nav>
     <div class="list-body">
       {{LIST}}
       <p class="list-empty" data-empty hidden>No crackers match that search.</p>
@@ -158,7 +156,7 @@
   </footer>
 
   <div class="estimate-bar" data-bar hidden>
-    <p class="nums"><span class="bar-total" data-total-text></span></p>
+    <p class="nums bar-text"><span class="bar-count" data-count-badge>0</span><span><span class="bar-total" data-total-text></span><span class="bar-save" data-save-text></span></span></p>
     <a class="button" href="{{SHOP_URL}}/cart" data-send>Send estimate <span class="arrow" aria-hidden="true">→</span></a>
   </div>
 

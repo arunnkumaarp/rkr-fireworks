@@ -95,7 +95,7 @@ a { text-underline-offset: 0.2em; }
 .list-tools input::placeholder { color: var(--muted); }
 .jump { position: relative; }
 .jump::after { font-size: var(--step-body); content: '↓'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
-@media (min-width: 48em) { .list-tools { grid-template-columns: 1.4fr 1fr; } }
+
 
 .list-body { margin-top: 24px; background: var(--surface); border-radius: var(--radius); padding: 0 clamp(16px, 2.5vw, 40px) 40px; }
 .group { scroll-margin-top: 8px; }
@@ -372,3 +372,47 @@ a, button, summary { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }
+
+/* ================= ordering UI ================= */
+/* category bar sticks under the top of the screen while you shop */
+.cat-nav {
+  position: sticky; top: 0; z-index: 4; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+  margin: 20px calc(var(--margin) * -1) 0; padding: 12px var(--margin); background: var(--bg);
+}
+.cat-nav::-webkit-scrollbar { display: none; }
+.cat-nav a {
+  flex: none; padding: 9px 16px; border-radius: 999px; background: var(--surface); color: var(--muted);
+  font-size: var(--step-small); font-weight: 500; text-decoration: none; white-space: nowrap;
+  transition: background-color 240ms ease, color 240ms ease;
+}
+.cat-nav a:hover { color: var(--ink); }
+.cat-nav a.is-on { background: var(--ink); color: var(--bg); }
+.group-name { position: static; padding-top: 48px; }
+.group { scroll-margin-top: 72px; }
+
+/* Add first, then the stepper */
+.add {
+  min-width: 7.5rem; height: 2.75rem; border-radius: 999px; background: var(--surface-2); color: var(--accent);
+  font-weight: 600; font-size: var(--step-body); transition: transform 140ms var(--ease-out), background-color 200ms ease;
+}
+.add:active { transform: scale(0.92); }
+@media (hover: hover) and (pointer: fine) { .add:hover { background: var(--accent); color: var(--accent-ink); } }
+.row:not(.is-picked) .step, .row:not(.is-picked) .r-qty input { display: none; }
+.row.is-picked .add { display: none; }
+.row.is-picked .r-qty { background: var(--accent); border-radius: 999px; padding: 2px; animation: grow 260ms var(--ease-out); }
+.row.is-picked .step { background: transparent; color: var(--accent-ink); width: 2.6rem; height: 2.6rem; }
+.row.is-picked .r-qty input { color: var(--accent-ink); width: 2.4rem; font-weight: 700; }
+@media (hover: hover) and (pointer: fine) { .row.is-picked .step:hover { background: rgba(0,0,0,0.12); color: var(--accent-ink); } }
+@keyframes grow { from { transform: scale(0.85); opacity: 0.6; } }
+@media (min-width: 60em) { .r-qty { min-width: 7.75rem; justify-content: flex-end; } }
+
+/* estimate bar: count, total, savings */
+.bar-text { display: flex; align-items: center; gap: 12px; }
+.bar-count {
+  min-width: 2rem; height: 2rem; padding: 0 8px; border-radius: 999px; background: var(--accent); color: var(--accent-ink);
+  display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: var(--step-small);
+}
+.bar-text > span:last-child { display: grid; line-height: 1.25; }
+.bar-total { font-weight: 600; }
+.bar-save { font-size: var(--step-small); color: #7FD99A; }
+.bar-save.is-short { color: var(--muted); }
