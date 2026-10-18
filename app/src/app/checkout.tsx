@@ -1,0 +1,137 @@
+import { useMutation } from '@tanstack/react-query';
+import { Redirect, router } from 'expo-router';
+import { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+
+import { Button } from '@/components/button';
+import { colors, MAX_CONTENT_WIDTH } from '@/components/theme';
+import { api, ApiError, type EstimateInput } from '@/lib/api';
+import { formatRupees } from '@/lib/format';
+import { useShopSettings } from '@/lib/queries';
+import { cartTotals, useCart } from '@/store/cart';
+
+type Form = Omit<EstimateInput, 'lines'>;
+
+const EMPTY: Form = { customer_name: '', phone: '', email: '', address: '', city: '', state: 'Tamil Nadu', pincode: '', notes: '' };
+
+function validate(form: Form) {
+  const errors: Partial<Record<keyof Form, string>> = {};
+  if (!form.customer_name.trim()) errors.customer_name = 'Enter your name';
+  if (form.phone.replace(/\D/g, '').slice(-10).length !== 10) errors.phone = 'Enter a 10-digit mobile number';
+  if (!form.address.trim()) errors.address = 'Enter your address';
+  if (!form.city.trim()) errors.city = 'Enter your city';
+  if (!form.state.trim()) errors.state = 'Enter your state';
+  if (!/^\d{6}$/.test(form.pincode.trim())) errors.pincode = 'Enter a 6-digit pincode';
+  return errors;
+}
+
+export default function CheckoutScreen() {
+  const lines = useCart((s) => s.lines);
+  const clear = useCart((s) => s.clear);
+  const { data: shop } = useShopSettings();
+  const [form, setForm] = useState<Form>(EMPTY);
+  const [touched, setTouched] = useState(false);
+
+  const submit = useMutation({
+    mutationFn: api.createEstimate,
+    onSuccess: (estimate) => {
+      clear();
+      router.replace({ pathname: '/estimate/[number]', params: { number: estimate.number, phone: estimate.phone } });
+    },
+  });
+
+  const totals = cartTotals(lines, Number(shop?.packing_charge_percent ?? 0));
+  if (totals.products === 0 && !submit.isSuccess) return <Redirect href="/cart" />;
+
+  const errors = validate(form);
+  const set = (key: keyof Form) => (value: string) => setForm((f) => ({ ...f, [key]: value }));
+  const field = (key: keyof Form, label: string, props: Partial<React.ComponentProps<typeof TextInput>> = {}) => (
+    <View style={styles.field}>
+      <Text style={styles.label}>{label}</Text>
+      <TextInput
+        value={form[key]}
+        onChangeText={set(key)}
+        style={[styles.input, props.multiline && styles.multiline, touched && errors[key] && styles.inputError]}
+        placeholderTextColor={colors.muted}
+        accessibilityLabel={label}
+        {...props}
+      />
+      {touched && errors[key] ? <Text style={styles.error}>{errors[key]}</Text> : null}
+    </View>
+  );
+
+  const onSubmit = () => {
+    setTouched(true);
+    if (Object.keys(errors).length > 0) return;
+    submit.mutate({
+      ...form,
+      lines: Object.values(lines).map((l) => ({ product: l.product.id, quantity: l.quantity })),
+    });
+  };
+
+  const serverError = submit.error instanceof ApiError ? submit.error.message : submit.error ? 'Could not reach the shop. Please try again.' : null;
+
+  return (
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        {field('customer_name', 'Full name', { autoComplete: 'name', textContentType: 'name' })}
+        {field('phone', 'Mobile number', { keyboardType: 'phone-pad', autoComplete: 'tel', placeholder: '10-digit mobile' })}
+        {field('email', 'Email (optional)', { keyboardType: 'email-address', autoCapitalize: 'none', autoComplete: 'email' })}
+        {field('address', 'Address', { multiline: true, autoComplete: 'street-address', placeholder: 'Door no, street, area' })}
+        <View style={styles.row}>
+          <View style={styles.flex}>{field('city', 'City', { autoComplete: 'postal-address-locality' })}</View>
+          <View style={styles.flex}>{field('pincode', 'Pincode', { keyboardType: 'number-pad', maxLength: 6, autoComplete: 'postal-code' })}</View>
+        </View>
+        {field('state', 'State', { autoComplete: 'postal-address-region' })}
+        {field('notes', 'Notes (optional)', { multiline: true, placeholder: 'Nearest transport office, preferred call time…' })}
+
+        <View style={styles.summary}>
+          <Text style={styles.summaryText}>{totals.products} products · {totals.count} items</Text>
+          <Text style={styles.summaryTotal}>{formatRupees(totals.total)}</Text>
+        </View>
+        <Text style={styles.note}>
+          No payment now. After you submit, we'll call you to confirm the order and share payment details.
+        </Text>
+        {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
+        <Button title="Submit estimate" onPress={onSubmit} loading={submit.isPending} />
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  container: { padding: 16, gap: 14, width: '100%', maxWidth: 640, alignSelf: 'center' },
+  row: { flexDirection: 'row', gap: 12 },
+  field: { gap: 6 },
+  label: { fontSize: 14, fontWeight: '600', color: colors.text },
+  input: {
+    minHeight: 46,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: colors.text,
+  },
+  multiline: { minHeight: 80, textAlignVertical: 'top' },
+  inputError: { borderColor: colors.danger },
+  error: { color: colors.danger, fontSize: 13 },
+  summary: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.sectionBg,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 6,
+  },
+  summaryText: { color: colors.text, fontSize: 14 },
+  summaryTotal: { color: colors.text, fontSize: 20, fontWeight: '800' },
+  note: { fontSize: 13, color: colors.muted, lineHeight: 19 },
+  serverError: { color: colors.danger, fontWeight: '600' },
+});
+
+void MAX_CONTENT_WIDTH;
