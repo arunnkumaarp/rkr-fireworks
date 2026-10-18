@@ -6,7 +6,7 @@ from django.core import mail
 from django.core.management import call_command
 from rest_framework.test import APIClient
 
-from accounts.models import EmailOTP
+from accounts.models import EmailOTP, User
 from catalog.models import Product
 
 
@@ -61,7 +61,9 @@ def test_my_estimates_only_shows_own(client):
         "lines": [{"product": Product.objects.get(code=34).pk, "quantity": 1}],
     }
     assert client.post("/api/v1/estimates/", order, format="json").status_code == 201
-    APIClient().post("/api/v1/estimates/", order, format="json")  # guest order, not linked
+    other = APIClient()
+    other.force_authenticate(User.objects.create(username="b@x.com", email="b@x.com"))
+    assert other.post("/api/v1/estimates/", order, format="json").status_code == 201
 
     mine = client.get("/api/v1/estimates/mine/").json()
     assert len(mine) == 1

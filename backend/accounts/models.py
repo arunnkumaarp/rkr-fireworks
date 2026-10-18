@@ -12,7 +12,7 @@ class User(AbstractUser):
         CUSTOMER = "customer", "Customer"
         ADMIN = "admin", "Admin"
 
-    phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
+    phone = models.CharField(max_length=15, blank=True, default="")
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.CUSTOMER)
 
     @property

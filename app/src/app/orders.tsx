@@ -44,7 +44,7 @@ export default function OrdersScreen() {
       renderItem={({ item }) => (
         <Pressable
           accessibilityRole="button"
-          onPress={() => router.push({ pathname: '/estimate/[number]', params: { number: item.number, phone: item.phone } })}
+          onPress={() => router.push({ pathname: '/estimate/[number]', params: { number: item.number } })}
           style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
           <View style={styles.cardTop}>
             <Text style={styles.number}>{item.number}</Text>

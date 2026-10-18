@@ -5,6 +5,7 @@ import pytest
 from django.core.management import call_command
 from rest_framework.test import APIClient
 
+from accounts.models import User
 from catalog.models import Product
 
 ADDRESS = {
@@ -14,9 +15,16 @@ ADDRESS = {
 
 
 @pytest.fixture
-def client(db):
+def user(db):
+    return User.objects.create(username="ravi@example.com", email="ravi@example.com")
+
+
+@pytest.fixture
+def client(user):
     call_command("import_products")
-    return APIClient()
+    c = APIClient()
+    c.force_authenticate(user)
+    return c
 
 
 def line(code, qty):
@@ -36,14 +44,34 @@ def test_create_estimate_snapshots_prices_and_totals(client):
     assert [i["code"] for i in data["items"]] == [1, 34]
 
 
+def test_estimate_uses_verified_email_and_saves_contact(client, user):
+    res = client.post("/api/v1/estimates/", {**ADDRESS, "email": "other@x.com", "lines": [line(34, 1)]}, format="json")
+    assert res.json()["email"] == "ravi@example.com"
+    user.refresh_from_db()
+    assert (user.phone, user.first_name) == ("9876543210", "Ravi")
+
+
+def test_login_and_phone_required(client):
+    assert APIClient().post("/api/v1/estimates/", {**ADDRESS, "lines": [line(34, 1)]}, format="json").status_code == 401
+    res = client.post("/api/v1/estimates/", {**{k: v for k, v in ADDRESS.items() if k != "phone"}, "lines": [line(34, 1)]}, format="json")
+    assert res.status_code == 400 and "phone" in res.json()
+
+
 def test_minimum_order_enforced(client):
     res = client.post("/api/v1/estimates/", {**ADDRESS, "lines": [line(1, 5)]}, format="json")
     assert res.status_code == 400
     assert "Minimum order" in str(res.json())
 
 
-def test_lookup_requires_matching_phone(client):
+def test_estimate_visible_only_to_owner_and_admin(client):
     number = client.post("/api/v1/estimates/", {**ADDRESS, "lines": [line(34, 1)]}, format="json").json()["number"]
-    assert client.get(f"/api/v1/estimates/{number}/", {"phone": "9876543210"}).status_code == 200
-    assert client.get(f"/api/v1/estimates/{number}/", {"phone": "9000000000"}).status_code == 404
-    assert client.get(f"/api/v1/estimates/{number}/").status_code == 404
+    assert client.get(f"/api/v1/estimates/{number}/").status_code == 200
+
+    other = APIClient()
+    other.force_authenticate(User.objects.create(username="b@x.com", email="b@x.com"))
+    assert other.get(f"/api/v1/estimates/{number}/").status_code == 404
+
+    admin = APIClient()
+    admin.force_authenticate(User.objects.create(username="admin", role=User.Role.ADMIN))
+    assert admin.get(f"/api/v1/estimates/{number}/").status_code == 200
+    assert APIClient().get(f"/api/v1/estimates/{number}/").status_code == 401

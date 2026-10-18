@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
-from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 
 from .models import Estimate
@@ -9,19 +8,18 @@ from .serializers import EstimateCreateSerializer, EstimateSerializer
 
 class EstimateCreateView(generics.CreateAPIView):
     serializer_class = EstimateCreateSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class EstimateDetailView(generics.RetrieveAPIView):
-    """Guest lookup: the estimate number plus the phone it was placed with."""
-
     serializer_class = EstimateSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        phone = "".join(ch for ch in self.request.query_params.get("phone", "") if ch.isdigit())[-10:]
-        if not phone:
-            raise NotFound()
-        return get_object_or_404(
-            Estimate.objects.prefetch_related("items"), number=self.kwargs["number"], phone=phone)
+        qs = Estimate.objects.prefetch_related("items")
+        if not self.request.user.is_shop_admin:
+            qs = qs.filter(user=self.request.user)
+        return get_object_or_404(qs, number=self.kwargs["number"])
 
 
 class MyEstimatesView(generics.ListAPIView):

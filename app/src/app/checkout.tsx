@@ -31,11 +31,12 @@ export default function CheckoutScreen() {
   const clear = useCart((s) => s.clear);
   const { data: shop } = useShopSettings();
   const user = useAuth((s) => s.user);
+  const updateUser = useAuth((s) => s.updateUser);
   const queryClient = useQueryClient();
   const [form, setForm] = useState<Form>(() => ({
     ...EMPTY,
     customer_name: user?.first_name ?? '',
-    email: user?.email ?? '',
+    phone: user?.phone ?? '',
   }));
   const [touched, setTouched] = useState(false);
 
@@ -43,12 +44,14 @@ export default function CheckoutScreen() {
     mutationFn: api.createEstimate,
     onSuccess: (estimate) => {
       clear();
+      updateUser({ phone: estimate.phone, first_name: user?.first_name || estimate.customer_name });
       queryClient.invalidateQueries({ queryKey: ['my-estimates'] });
-      router.replace({ pathname: '/estimate/[number]', params: { number: estimate.number, phone: estimate.phone } });
+      router.replace({ pathname: '/estimate/[number]', params: { number: estimate.number } });
     },
   });
 
   const totals = cartTotals(lines, Number(shop?.packing_charge_percent ?? 0));
+  if (!user) return <Redirect href={{ pathname: '/login', params: { next: '/checkout' } }} />;
   if (totals.products === 0 && !submit.isSuccess) return <Redirect href="/cart" />;
 
   const errors = validate(form);
@@ -84,7 +87,7 @@ export default function CheckoutScreen() {
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
         {field('customer_name', 'Full name', { autoComplete: 'name', textContentType: 'name' })}
         {field('phone', 'Mobile number', { keyboardType: 'phone-pad', autoComplete: 'tel', placeholder: '10-digit mobile' })}
-        {field('email', 'Email (optional)', { keyboardType: 'email-address', autoCapitalize: 'none', autoComplete: 'email' })}
+        <Text style={styles.note}>Order updates go to {user.email}</Text>
         {field('address', 'Address', { multiline: true, autoComplete: 'street-address', placeholder: 'Door no, street, area' })}
         <View style={styles.row}>
           <View style={styles.flex}>{field('city', 'City', { autoComplete: 'postal-address-locality' })}</View>
@@ -102,11 +105,7 @@ export default function CheckoutScreen() {
         </Text>
         {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
         <Button title="Submit estimate" onPress={onSubmit} loading={submit.isPending} />
-        {!user ? (
-          <Text style={styles.note}>
-            Log in with your email first if you want to see this order later under My orders.
-          </Text>
-        ) : null}
+
       </ScrollView>
     </KeyboardAvoidingView>
   );

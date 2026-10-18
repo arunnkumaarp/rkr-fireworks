@@ -55,7 +55,7 @@ export default function CartScreen() {
         </Text>
       )}
 
-      <Button title="Continue to delivery details" disabled={shortBy > 0} onPress={() => router.push('/checkout')} />
+      <Button title="Continue to checkout" disabled={shortBy > 0} onPress={() => router.push('/checkout')} />
       <Button title="Clear cart" variant="secondary" onPress={clear} />
     </ScrollView>
   );

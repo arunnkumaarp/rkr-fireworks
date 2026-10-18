@@ -26,7 +26,7 @@ class EstimateSerializer(serializers.ModelSerializer):
             "total", "status", "transport_name", "lr_number", "created_at",
         ]
         read_only_fields = [
-            "number", "mrp_total", "subtotal", "packing_charge", "total", "status",
+            "number", "email", "mrp_total", "subtotal", "packing_charge", "total", "status",
             "transport_name", "lr_number", "created_at",
         ]
 
@@ -72,8 +72,12 @@ class EstimateCreateSerializer(EstimateSerializer):
         lines = validated_data.pop("lines")
         shop = validated_data.pop("_shop")
         user = self.context["request"].user
-        estimate = Estimate.objects.create(
-            user=user if user.is_authenticated else None, **validated_data)
+        # The verified login email is the one on record, whatever the form sent.
+        estimate = Estimate.objects.create(user=user, **{**validated_data, "email": user.email})
+        # Remember contact details for the next checkout.
+        user.phone = validated_data["phone"]
+        user.first_name = user.first_name or validated_data["customer_name"][:150]
+        user.save(update_fields=["phone", "first_name"])
         EstimateItem.objects.bulk_create([
             EstimateItem(estimate=estimate, product=p, code=p.code, name=p.name, unit=p.unit,
                          mrp=p.mrp, price=p.offer_price, quantity=q)

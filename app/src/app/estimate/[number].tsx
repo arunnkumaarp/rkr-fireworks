@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
@@ -8,15 +8,19 @@ import { colors } from '@/components/theme';
 import { api, type Estimate, type ShopSettings } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
 import { useShopSettings } from '@/lib/queries';
+import { useAuth } from '@/store/auth';
 
 export default function EstimateScreen() {
-  const { number, phone } = useLocalSearchParams<{ number: string; phone: string }>();
+  const { number } = useLocalSearchParams<{ number: string }>();
+  const signedIn = useAuth((s) => !!s.user);
   const { data: shop } = useShopSettings();
   const estimate = useQuery({
-    queryKey: ['estimate', number, phone],
-    queryFn: () => api.estimate(number, phone ?? ''),
-    enabled: !!number && !!phone,
+    queryKey: ['estimate', number],
+    queryFn: () => api.estimate(number),
+    enabled: !!number && signedIn,
   });
+
+  if (!signedIn) return <Redirect href={{ pathname: '/login', params: { next: `/estimate/${number}` } }} />;
 
   if (estimate.isPending && estimate.fetchStatus !== 'idle') {
     return <ActivityIndicator style={styles.center} size="large" color={colors.primary} />;

@@ -76,7 +76,7 @@ export type User = {
   id: number;
   email: string;
   first_name: string;
-  phone: string | null;
+  phone: string;
   role: 'customer' | 'admin';
 };
 
@@ -161,6 +161,5 @@ export const api = {
       body: JSON.stringify({ email, code }),
     }),
   myEstimates: () => request<Estimate[]>('/estimates/mine/'),
-  estimate: (number: string, phone: string) =>
-    request<Estimate>(`/estimates/${encodeURIComponent(number)}/?phone=${encodeURIComponent(phone)}`),
+  estimate: (number: string) => request<Estimate>(`/estimates/${encodeURIComponent(number)}/`),
 };
