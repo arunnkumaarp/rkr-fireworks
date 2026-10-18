@@ -27,9 +27,9 @@ export function Button({ title, onPress, variant = 'primary', disabled, loading,
         style,
       ]}>
       {loading ? (
-        <ActivityIndicator color={variant === 'secondary' ? colors.primary : '#fff'} />
+        <ActivityIndicator color={variant === 'primary' ? colors.onPrimary : colors.text} />
       ) : (
-        <Text style={[styles.text, variant === 'secondary' && styles.textSecondary]}>{title}</Text>
+        <Text style={[styles.text, variant !== 'primary' && styles.textSecondary]}>{title}</Text>
       )}
     </Pressable>
   );
@@ -48,6 +48,6 @@ const styles = StyleSheet.create({
   whatsapp: { backgroundColor: '#1F9D55' },
   pressed: { opacity: 0.85 },
   disabled: { opacity: 0.5 },
-  text: { color: '#fff', fontFamily: fonts.textBold, fontSize: 16, },
-  textSecondary: { color: colors.primary },
+  text: { color: colors.onPrimary, fontFamily: fonts.textBold, fontSize: 16 },
+  textSecondary: { color: colors.text },
 });

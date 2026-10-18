@@ -60,12 +60,12 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.sectionBg,
   },
   btnDisabled: { opacity: 0.4 },
   btnPlus: { backgroundColor: colors.primary, borderColor: colors.primary },
   btnText: { fontFamily: fonts.textSemi, fontSize: 18, color: colors.text, lineHeight: 20 },
-  btnPlusText: { color: '#fff' },
+  btnPlusText: { color: colors.onPrimary },
   input: {
     width: 44,
     height: 32,
@@ -78,5 +78,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: 0,
   },
-  inputActive: { borderColor: colors.primary, backgroundColor: '#FFF4F4' },
+  inputActive: { borderColor: colors.primary, backgroundColor: colors.sectionBg },
 });

@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     gap: 12,
   },
-  rowActive: { backgroundColor: '#FFF6DC' },
+  rowActive: { backgroundColor: colors.sectionBg },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     gap: 12,
   },
-  headCell: { color: '#fff', fontFamily: fonts.textBold, fontSize: 14 },
+  headCell: { color: colors.onPrimary, fontFamily: fonts.textBold, fontSize: 14 },
   center: { textAlign: 'center' },
   cell: { fontFamily: fonts.text, fontSize: 15, color: colors.text, fontVariant: ['tabular-nums'] },
   colCode: { width: 44 },

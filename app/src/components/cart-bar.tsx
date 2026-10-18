@@ -53,9 +53,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   summary: { flex: 1, gap: 2 },
-  total: { color: '#fff', fontFamily: fonts.textBold, fontSize: 20, },
-  meta: { color: '#E8DDF0', fontFamily: fonts.text, fontSize: 12 },
+  total: { color: colors.text, fontFamily: fonts.textBold, fontSize: 20, },
+  meta: { color: colors.muted, fontFamily: fonts.text, fontSize: 12 },
   warn: { color: colors.gold, fontFamily: fonts.textSemi, fontSize: 12, },
   btn: { backgroundColor: colors.gold, borderRadius: 999, paddingHorizontal: 18, paddingVertical: 12 },
-  btnText: { color: colors.text, fontFamily: fonts.textBold, fontSize: 15 },
+  btnText: { color: colors.onPrimary, fontFamily: fonts.textBold, fontSize: 15 },
 });

@@ -19,7 +19,7 @@ import { CartBar } from '@/components/cart-bar';
 import { Hero } from '@/components/hero';
 import { PriceListHeader, ProductRow } from '@/components/product-row';
 import { ShopFooter } from '@/components/shop-footer';
-import { bannerColors, colors, fonts, MAX_CONTENT_WIDTH, WIDE_BREAKPOINT } from '@/components/theme';
+import { colors, fonts, MAX_CONTENT_WIDTH, WIDE_BREAKPOINT } from '@/components/theme';
 import type { Product } from '@/lib/api';
 import { useCategories, useProducts, useShopSettings } from '@/lib/queries';
 import { syncCartWithCatalogue, useCart } from '@/store/cart';
@@ -56,10 +56,9 @@ function PriceList() {
       (categoryId === null || p.category === categoryId) &&
       (!q || p.name.toLowerCase().includes(q) || String(p.code) === q);
     return categories.data
-      .map((c, i) => ({
+      .map((c) => ({
         key: String(c.id),
         title: c.name,
-        color: bannerColors[i % bannerColors.length],
         data: products.data.filter((p) => p.category === c.id && matches(p)),
       }))
       .filter((s) => s.data.length > 0);
@@ -120,7 +119,7 @@ function PriceList() {
         initialNumToRender={30}
         renderSectionHeader={({ section }) => (
           <View style={styles.page}>
-            <Banner title={section.title} color={section.color} />
+            <Banner title={section.title} />
           </View>
         )}
         renderItem={({ item }) => (
@@ -174,7 +173,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999, backgroundColor: colors.surfaceAlt },
   chipActive: { backgroundColor: colors.primary },
   chipText: { fontFamily: fonts.textSemi, fontSize: 14, color: colors.text },
-  chipTextActive: { color: '#fff' },
+  chipTextActive: { color: colors.onPrimary },
   empty: { padding: 24, textAlign: 'center', color: colors.muted, fontFamily: fonts.text },
   grow: { flexGrow: 1 },
   footer: { marginTop: 'auto', paddingTop: 48 },

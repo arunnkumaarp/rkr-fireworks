@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.surfaceAlt },
   chipActive: { backgroundColor: colors.purple },
   chipText: { fontFamily: fonts.textSemi, fontSize: 14, color: colors.text },
-  chipTextActive: { color: '#fff' },
+  chipTextActive: { color: colors.text },
   empty: { padding: 24, textAlign: 'center', color: colors.muted, fontFamily: fonts.text, fontSize: 15 },
   card: { backgroundColor: colors.surfaceAlt, borderRadius: 14, padding: 14, gap: 3 },
   pressed: { opacity: 0.8 },

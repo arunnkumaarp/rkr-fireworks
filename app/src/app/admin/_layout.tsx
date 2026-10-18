@@ -12,12 +12,13 @@ export default function AdminLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: colors.purple },
-        headerTintColor: '#fff',
+        headerStyle: { backgroundColor: colors.background },
+        headerShadowVisible: false,
+        headerTintColor: colors.text,
         headerTitleStyle: { fontFamily: fonts.display, fontSize: 22 },
         contentStyle: { backgroundColor: colors.background },
         headerRight: () => (
-          <Link href="/" style={{ color: '#fff', fontFamily: fonts.textBold, fontSize: 15, paddingHorizontal: 12 }}>
+          <Link href="/" style={{ color: colors.gold, fontFamily: fonts.textSemi, fontSize: 15, paddingHorizontal: 12 }}>
             View shop
           </Link>
         ),

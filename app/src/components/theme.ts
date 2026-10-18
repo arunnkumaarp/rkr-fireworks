@@ -1,29 +1,26 @@
-// Every colour is taken from RKR's printed 2026 price list: the red column-header bar,
-// white paper, black ink, the gold "80%" and the purple band on the back page.
+// The night palette shared with the website: warm black ground, light ink, sparkler gold on actions.
 export const colors = {
-  primary: '#D7261E',
-  primaryDark: '#A8150F',
-  purple: '#5A1A6E',
-  gold: '#F5B800',
-  green: '#1E7B34',
-  text: '#16131A',
-  muted: '#625C66',
-  border: '#E3DDE0', // form fields and the price table only
-  background: '#FFFFFF',
-  surface: '#FFFFFF',
-  surfaceAlt: '#F4F1EE',
-  sectionBg: '#FBE9E7',
-  danger: '#B3261E',
+  primary: '#F2B544', // sparkler gold: buttons and the one highlight per screen
+  primaryDark: '#F2B544',
+  onPrimary: '#14100A', // text on gold
+  purple: '#26221F', // raised panels (was the printed list's purple band)
+  gold: '#F2B544',
+  green: '#7FD99A', // offer prices and success, readable on the dark ground
+  text: '#F2F2F0',
+  muted: '#A8A19A',
+  border: '#3A3532', // form fields only
+  background: '#0F0D0C',
+  surface: '#141210',
+  surfaceAlt: '#1B1816',
+  sectionBg: '#26221F',
+  danger: '#FF8A7A',
 };
 
-// Category banners on the price list cycle through these inks, in this order.
-export const bannerColors = ['#2F4FA2', '#2E7D32', '#B0186B', '#B9410A', '#5E2B97'];
-
 export const fonts = {
-  display: 'Anton_400Regular',
-  text: 'Archivo_400Regular',
-  textSemi: 'Archivo_600SemiBold',
-  textBold: 'Archivo_800ExtraBold',
+  display: 'Gambarino',
+  text: 'GeneralSans-Regular',
+  textSemi: 'GeneralSans-Medium',
+  textBold: 'GeneralSans-Semibold',
 };
 
 export const MAX_CONTENT_WIDTH = 1120;

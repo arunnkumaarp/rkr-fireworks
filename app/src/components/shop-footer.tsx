@@ -37,10 +37,10 @@ export function ShopFooter({ shop }: { shop?: ShopSettings }) {
           </Text>
         </View>
         <Image
-          source={require('@/assets/images/rkr-crackers.jpg')}
+          source={require('@/assets/images/sparkler.jpg')}
           style={[styles.art, wide && styles.artWide]}
           contentFit="cover"
-          accessibilityLabel="A boy in a blue kurta holding an armful of rockets and sparklers"
+          accessibilityLabel="A sparkler burning gold against the dark"
         />
       </View>
     </View>
@@ -48,17 +48,17 @@ export function ShopFooter({ shop }: { shop?: ShopSettings }) {
 }
 
 const styles = StyleSheet.create({
-  band: { backgroundColor: colors.purple, paddingHorizontal: 16, paddingTop: 48, paddingBottom: 32 },
+  band: { backgroundColor: colors.surfaceAlt, paddingHorizontal: 16, paddingTop: 48, paddingBottom: 32 },
   inner: { width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', gap: 28 },
   innerWide: { flexDirection: 'row', alignItems: 'flex-end' },
   col: { gap: 12 },
   colWide: { flex: 1 },
   name: { fontFamily: fonts.display, color: colors.gold },
-  body: { fontFamily: fonts.text, fontSize: 17, lineHeight: 25, color: '#fff', maxWidth: 520 },
-  phone: { fontFamily: fonts.display, fontSize: 40, color: '#fff', fontVariant: ['tabular-nums'] },
+  body: { fontFamily: fonts.text, fontSize: 17, lineHeight: 25, color: colors.text, maxWidth: 520 },
+  phone: { fontFamily: fonts.display, fontSize: 40, color: colors.text, fontVariant: ['tabular-nums'] },
   links: { flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginTop: 8 },
-  link: { fontFamily: fonts.textSemi, fontSize: 16, color: '#fff', textDecorationLine: 'underline' },
-  fine: { fontFamily: fonts.text, fontSize: 14, lineHeight: 20, color: '#E9DDF0', maxWidth: 560 },
-  art: { width: '100%', aspectRatio: 1.41 },
+  link: { fontFamily: fonts.textSemi, fontSize: 16, color: colors.text, textDecorationLine: 'underline' },
+  fine: { fontFamily: fonts.text, fontSize: 14, lineHeight: 20, color: colors.muted, maxWidth: 560 },
+  art: { width: '100%', aspectRatio: 1.33, borderRadius: 12 },
   artWide: { flex: 1, width: undefined },
 });

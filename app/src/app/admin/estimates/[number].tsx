@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.surfaceAlt },
   chipActive: { backgroundColor: colors.purple },
   chipText: { fontFamily: fonts.textSemi, fontSize: 14, color: colors.text },
-  chipTextActive: { color: '#fff' },
+  chipTextActive: { color: colors.text },
   label: { fontFamily: fonts.textSemi, fontSize: 14, color: colors.text, marginBottom: 4 },
   input: {
     height: 44,

@@ -1,5 +1,4 @@
-import { Anton_400Regular } from '@expo-google-fonts/anton';
-import { Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold, useFonts } from '@expo-google-fonts/archivo';
+import { useFonts } from 'expo-font';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Link, Stack } from 'expo-router';
 import { Platform, Pressable, Text } from 'react-native';
@@ -17,7 +16,12 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({ Anton_400Regular, Archivo_400Regular, Archivo_600SemiBold, Archivo_800ExtraBold });
+  const [fontsLoaded, fontError] = useFonts({
+    Gambarino: require('@/assets/fonts/Gambarino-Regular.ttf'),
+    'GeneralSans-Regular': require('@/assets/fonts/GeneralSans-Regular.ttf'),
+    'GeneralSans-Medium': require('@/assets/fonts/GeneralSans-Medium.ttf'),
+    'GeneralSans-Semibold': require('@/assets/fonts/GeneralSans-Semibold.ttf'),
+  });
   const ready = fontsLoaded || !!fontError;
 
   useEffect(() => {
@@ -31,8 +35,9 @@ export default function RootLayout() {
       <StatusBar style="light" />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.primary },
-          headerTintColor: '#fff',
+          headerStyle: { backgroundColor: colors.background },
+          headerShadowVisible: false,
+          headerTintColor: colors.text,
           headerTitleStyle: { fontFamily: fonts.display, fontSize: 22 },
           // The bar is a plain wordmark that always leads home; `title` still names the browser tab.
           headerTitle: () => <Wordmark />,
@@ -53,7 +58,7 @@ export default function RootLayout() {
   );
 }
 
-const wordmarkStyle = { color: '#fff', fontFamily: fonts.display, fontSize: 24 };
+const wordmarkStyle = { color: colors.text, fontFamily: fonts.display, fontSize: 26 };
 
 function Wordmark() {
   if (Platform.OS === 'web') {
@@ -75,7 +80,7 @@ function AccountLink() {
   const user = useAuth((s) => s.user);
   const isAdmin = user?.role === 'admin';
   return (
-    <Link href={isAdmin ? '/admin' : '/orders'} style={{ color: '#fff', fontFamily: fonts.textBold, fontSize: 15, paddingHorizontal: 12 }}>
+    <Link href={isAdmin ? '/admin' : '/orders'} style={{ color: colors.gold, fontFamily: fonts.textSemi, fontSize: 15, paddingHorizontal: 12 }}>
       {isAdmin ? 'Shop admin' : user ? 'My orders' : 'Log in'}
     </Link>
   );
