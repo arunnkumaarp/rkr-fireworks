@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -8,6 +8,7 @@ import { colors, MAX_CONTENT_WIDTH } from '@/components/theme';
 import { api, ApiError, type EstimateInput } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
 import { useShopSettings } from '@/lib/queries';
+import { useAuth } from '@/store/auth';
 import { cartTotals, useCart } from '@/store/cart';
 
 type Form = Omit<EstimateInput, 'lines'>;
@@ -29,13 +30,20 @@ export default function CheckoutScreen() {
   const lines = useCart((s) => s.lines);
   const clear = useCart((s) => s.clear);
   const { data: shop } = useShopSettings();
-  const [form, setForm] = useState<Form>(EMPTY);
+  const user = useAuth((s) => s.user);
+  const queryClient = useQueryClient();
+  const [form, setForm] = useState<Form>(() => ({
+    ...EMPTY,
+    customer_name: user?.first_name ?? '',
+    email: user?.email ?? '',
+  }));
   const [touched, setTouched] = useState(false);
 
   const submit = useMutation({
     mutationFn: api.createEstimate,
     onSuccess: (estimate) => {
       clear();
+      queryClient.invalidateQueries({ queryKey: ['my-estimates'] });
       router.replace({ pathname: '/estimate/[number]', params: { number: estimate.number, phone: estimate.phone } });
     },
   });
@@ -94,6 +102,11 @@ export default function CheckoutScreen() {
         </Text>
         {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
         <Button title="Submit estimate" onPress={onSubmit} loading={submit.isPending} />
+        {!user ? (
+          <Text style={styles.note}>
+            Log in with your email first if you want to see this order later under My orders.
+          </Text>
+        ) : null}
       </ScrollView>
     </KeyboardAvoidingView>
   );

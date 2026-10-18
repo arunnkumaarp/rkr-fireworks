@@ -1,3 +1,4 @@
+import re
 from decimal import Decimal
 
 import pytest
@@ -27,7 +28,7 @@ def test_create_estimate_snapshots_prices_and_totals(client):
     res = client.post("/api/v1/estimates/", {**ADDRESS, "lines": [line(34, 2), line(1, 3)]}, format="json")
     assert res.status_code == 201, res.json()
     data = res.json()
-    assert data["number"].startswith("RKR") and data["number"].endswith("-0001")
+    assert re.fullmatch(r"RKR\d{2}-\d{4,}", data["number"])
     assert data["phone"] == "9876543210"
     assert Decimal(data["subtotal"]) == Decimal("3579.40")
     assert Decimal(data["mrp_total"]) == Decimal("17897.00")

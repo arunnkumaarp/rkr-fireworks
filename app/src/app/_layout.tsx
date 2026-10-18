@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
 import { colors } from '@/components/theme';
+import { useAuth } from '@/store/auth';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,11 +28,22 @@ export default function RootLayout() {
           headerTitleStyle: { fontWeight: '700' },
           contentStyle: { backgroundColor: colors.background },
         }}>
-        <Stack.Screen name="index" options={{ title: 'RKR Crackers' }} />
+        <Stack.Screen name="index" options={{ title: 'RKR Crackers', headerRight: () => <AccountLink /> }} />
         <Stack.Screen name="cart" options={{ title: 'Your cart' }} />
         <Stack.Screen name="checkout" options={{ title: 'Delivery details' }} />
+        <Stack.Screen name="login" options={{ title: 'Log in' }} />
+        <Stack.Screen name="orders" options={{ title: 'My orders' }} />
         <Stack.Screen name="estimate/[number]" options={{ title: 'Estimate', headerBackVisible: false }} />
       </Stack>
     </QueryClientProvider>
+  );
+}
+
+function AccountLink() {
+  const signedIn = useAuth((s) => !!s.user);
+  return (
+    <Link href="/orders" style={{ color: '#fff', fontWeight: '700', fontSize: 15, paddingHorizontal: 12 }}>
+      {signedIn ? 'My orders' : 'Log in'}
+    </Link>
   );
 }

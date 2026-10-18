@@ -1,3 +1,5 @@
+import { useAuth } from '@/store/auth';
+
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
 
 export type Category = {
@@ -70,6 +72,14 @@ export type Estimate = {
   created_at: string;
 };
 
+export type User = {
+  id: number;
+  email: string;
+  first_name: string;
+  phone: string | null;
+  role: 'customer' | 'admin';
+};
+
 export type EstimateInput = Pick<
   Estimate,
   'customer_name' | 'phone' | 'email' | 'address' | 'city' | 'state' | 'pincode' | 'notes'
@@ -82,11 +92,45 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
+function send(path: string, init?: RequestInit) {
+  const { access } = useAuth.getState();
+  return fetch(`${API_URL}${path}`, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(access ? { Authorization: `Bearer ${access}` } : {}),
+      ...init?.headers,
+    },
   });
+}
+
+/** Swaps the refresh token for a new access token; signs out if it has expired. */
+async function refreshAccess() {
+  const { refresh, setAccess, signOut } = useAuth.getState();
+  if (!refresh) {
+    signOut();
+    return false;
+  }
+  const res = await fetch(`${API_URL}/auth/refresh/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh }),
+  });
+  if (!res.ok) {
+    signOut();
+    return false;
+  }
+  setAccess((await res.json()).access);
+  return true;
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  let res = await send(path, init);
+  if (res.status === 401 && useAuth.getState().access) {
+    // Refresh, or sign out on failure; either way retry once (public endpoints work signed out).
+    await refreshAccess();
+    res = await send(path, init);
+  }
   if (!res.ok) {
     let body: unknown = {};
     try {
@@ -109,6 +153,14 @@ export const api = {
   settings: () => request<ShopSettings>('/settings/public/'),
   createEstimate: (input: EstimateInput) =>
     request<Estimate>('/estimates/', { method: 'POST', body: JSON.stringify(input) }),
+  sendCode: (email: string) =>
+    request<{ detail: string }>('/auth/otp/send/', { method: 'POST', body: JSON.stringify({ email }) }),
+  verifyCode: (email: string, code: string) =>
+    request<{ access: string; refresh: string; user: User }>('/auth/otp/verify/', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    }),
+  myEstimates: () => request<Estimate[]>('/estimates/mine/'),
   estimate: (number: string, phone: string) =>
     request<Estimate>(`/estimates/${encodeURIComponent(number)}/?phone=${encodeURIComponent(phone)}`),
 };
