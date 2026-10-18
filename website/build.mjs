@@ -9,7 +9,6 @@ const SHOP_URL = process.env.SHOP_URL || '/shop';
 const DISCOUNT = 80;
 const MIN_ORDER = 1000;
 const PHONES = ['9500403856', '9176020261'];
-const INKS = ['#2F4FA2', '#2E7D32', '#B0186B', '#B9410A', '#5E2B97'];
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const inr = (n) => '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -58,16 +57,20 @@ const creditLine = credits
   .join(' · ');
 
 const list = groups
-  .map((g, gi) => `
-        <section class="group" id="${slug(g.name)}" aria-labelledby="g-${gi}">
-          <h3 class="banner" id="g-${gi}" style="--ink-band:${INKS[gi % INKS.length]}" data-reveal>${esc(g.name)}</h3>
-          <ul class="items">${g.items
+  .map((g) => `
+        <section class="group" id="${slug(g.name)}" aria-labelledby="g-${slug(g.name)}" data-group>
+          <h3 class="group-name" id="g-${slug(g.name)}" data-reveal>${esc(g.name)}</h3>
+          <ul class="rows">${g.items
             .map((p) => `
-            <li class="item" data-code="${p.code}">
-              <span class="item-name">${esc(p.name)}</span>
-              <span class="item-price nums" data-price>${inr(p.offer)}</span>
-              <span class="item-note nums">Code ${p.code} · MRP <s data-mrp>${inr(p.mrp)}</s> · 1 ${esc(p.unit)}</span>
-              <label class="qty"><span class="sr-only">Quantity of ${esc(p.name)}</span><input type="number" inputmode="numeric" min="0" max="999" placeholder="0" data-qty></label>
+            <li class="row" data-code="${p.code}" data-name="${esc(p.name.toLowerCase())}">
+              <span class="r-name">${esc(p.name)}</span>
+              <span class="r-mrp nums"><s data-mrp>${inr(p.mrp)}</s></span>
+              <span class="r-price nums"><span data-price>${inr(p.offer)}</span> <span class="r-unit">/ ${esc(p.unit.toLowerCase())}</span></span>
+              <span class="r-qty">
+                <button type="button" class="step" data-step="-1" aria-label="One less ${esc(p.name)}">−</button>
+                <input type="number" inputmode="numeric" min="0" max="999" placeholder="0" aria-label="Quantity of ${esc(p.name)}" data-qty>
+                <button type="button" class="step" data-step="1" aria-label="One more ${esc(p.name)}">+</button>
+              </span>
             </li>`)
             .join('')}
           </ul>
@@ -75,22 +78,15 @@ const list = groups
   .join('');
 
 const gift = range('Gift Boxes'), family = range('Family Pack'), toys = range('RKR Toys Special Crackers');
-const tabs = [
-  { id: 'gift-boxes', label: 'Gift boxes', title: 'Gift boxes', text: `${gift.count} ready-packed boxes, from ${inr(gift.low)} to the Kohinoor box at ${inr(gift.high)}. The quickest way to order for a whole family.` },
-  { id: 'family-pack', label: 'Family packs', title: 'Family packs', text: `Our two biggest assortments, at ${inr(family.low)} and ${inr(family.high)}, with enough for every night of the festival.` },
-  { id: 'rkr-toys-special-crackers', label: 'Toy specials', title: 'Toy specials', text: `${toys.count} novelty pieces for children, from ${inr(toys.low)} to ${inr(toys.high)}: candles, sharks, cartoon fountains and more.` },
-];
+const boxCaption = `Gift boxes ${inr(gift.low)} to ${inr(gift.high)} · Family packs ${inr(family.low)} and ${inr(family.high)} · ${toys.count} toy specials from ${inr(toys.low)}`;
 
 const faq = [
-  ['Is there a minimum order?', `Yes, ${inr0(MIN_ORDER)} at our offer prices, before transport.`],
   ['Do I pay online?', 'No. You send an estimate here, we call you to confirm the total, and then you pay by UPI or bank transfer.'],
   ['How is it delivered?', 'By lorry transport to the transport office nearest you. We share the LR number so you can track and collect it.'],
   ['Who pays for transport?', 'You pay the transport charges at the office when you collect your parcel.'],
   ['Can I change my order after sending it?', 'Yes. Tell us on the confirmation call and we update the estimate before you pay.'],
   ['Where do you deliver?', 'Only where the sale of firecrackers is allowed. Tell us your town on the call and we will confirm.'],
-  ['What about green crackers and timings?', 'Follow the rules in your area. Ask us on the call which items suit them.'],
   ['What if something arrives damaged?', 'Send us photos on WhatsApp within 24 hours of collecting and we will sort it out.'],
-  ['Where do I see my orders?', `Log in with your email at <a class="link-plain" href="${SHOP_URL}/orders">your orders</a>. Each estimate shows its status and LR number.`],
 ];
 
 const template = readFileSync(new URL('./index.template.html', here), 'utf8');
@@ -103,12 +99,10 @@ const html = template
   .replaceAll('{{PHONE2_FMT}}', phone(PHONES[1]))
   .replaceAll('{{MIN_ORDER}}', inr0(MIN_ORDER))
   .replaceAll('{{COUNT}}', String(products.length))
-  .replace('{{INDEX}}', groups.map((g) => `<li><a href="#${slug(g.name)}">${esc(g.name)}</a></li>`).join(''))
+  .replace('{{JUMP}}', groups.map((g) => `<option value="${slug(g.name)}">${esc(g.name)} (${g.items.length})</option>`).join(''))
   .replace('{{LIST}}', list)
-  .replace('{{TABS}}', tabs.map((t, i) => `<button type="button" role="tab" aria-selected="${i === 0}" data-tab="${t.id}" data-title="${esc(t.title)}" data-text="${esc(t.text)}">${t.label}</button>`).join(''))
-  .replace('{{TAB_TITLE}}', esc(tabs[0].title))
-  .replace('{{TAB_TEXT}}', esc(tabs[0].text))
-  .replace('{{FAQ}}', faq.map(([q, a]) => `<p data-reveal><strong>${q}</strong> ${a}</p>`).join('\n          '))
+  .replace('{{BOX_CAPTION}}', esc(boxCaption))
+  .replace('{{FAQ}}', faq.map(([q, a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join('\n          '))
   .replace('{{CREDITS}}', creditLine);
 writeFileSync(new URL('./index.html', here), html);
 console.log(`index.html: ${products.length} products in ${groups.length} groups`);
