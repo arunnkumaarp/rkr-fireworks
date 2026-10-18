@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { memo, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
-import { colors } from '@/components/theme';
+import { colors, fonts } from '@/components/theme';
 import { api, type AdminProduct } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
 
@@ -107,17 +107,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: 12,
-    fontSize: 16,
+    fontFamily: fonts.text, fontSize: 16,
     color: colors.text,
     backgroundColor: colors.surface,
   },
-  hint: { fontSize: 14, color: colors.muted },
+  hint: { fontFamily: fonts.text, fontSize: 14, color: colors.muted },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.surfaceAlt, borderRadius: 12, padding: 12 },
   inactive: { opacity: 0.55 },
   info: { flex: 1, gap: 2 },
-  name: { fontSize: 15, fontWeight: '600', color: colors.text },
-  meta: { fontSize: 13, color: colors.muted },
-  error: { fontSize: 13, color: colors.danger },
+  name: { fontFamily: fonts.textSemi, fontSize: 15, color: colors.text },
+  meta: { fontFamily: fonts.text, fontSize: 13, color: colors.muted },
+  error: { fontFamily: fonts.text, fontSize: 13, color: colors.danger },
   mrp: {
     width: 96,
     height: 38,
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: 10,
-    fontSize: 15,
+    fontFamily: fonts.text, fontSize: 15,
     textAlign: 'right',
     color: colors.text,
     backgroundColor: colors.surface,

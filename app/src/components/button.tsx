@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
 
-import { colors } from './theme';
+import { colors, fonts } from './theme';
 
 type Props = {
   title: string;
@@ -48,6 +48,6 @@ const styles = StyleSheet.create({
   whatsapp: { backgroundColor: '#1F9D55' },
   pressed: { opacity: 0.85 },
   disabled: { opacity: 0.5 },
-  text: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  text: { color: '#fff', fontFamily: fonts.textBold, fontSize: 16, },
   textSecondary: { color: colors.primary },
 });

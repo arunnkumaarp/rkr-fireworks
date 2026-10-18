@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { colors } from '@/components/theme';
+import { colors, fonts } from '@/components/theme';
 import { api } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
 import { ADMIN_STATUS_LABEL, STATUSES } from '@/lib/status';
@@ -86,22 +86,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: 12,
-    fontSize: 16,
+    fontFamily: fonts.text, fontSize: 16,
     color: colors.text,
     backgroundColor: colors.surface,
   },
   chips: { gap: 8 },
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.surfaceAlt },
   chipActive: { backgroundColor: colors.purple },
-  chipText: { fontSize: 14, fontWeight: '600', color: colors.text },
+  chipText: { fontFamily: fonts.textSemi, fontSize: 14, color: colors.text },
   chipTextActive: { color: '#fff' },
-  empty: { padding: 24, textAlign: 'center', color: colors.muted, fontSize: 15 },
+  empty: { padding: 24, textAlign: 'center', color: colors.muted, fontFamily: fonts.text, fontSize: 15 },
   card: { backgroundColor: colors.surfaceAlt, borderRadius: 14, padding: 14, gap: 3 },
   pressed: { opacity: 0.8 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between' },
-  number: { fontSize: 17, fontWeight: '800', color: colors.text },
-  total: { fontSize: 17, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
-  name: { fontSize: 15, color: colors.text },
-  status: { fontSize: 14, color: colors.muted },
-  statusNew: { color: colors.primary, fontWeight: '700' },
+  number: { fontFamily: fonts.textBold, fontSize: 17, color: colors.text },
+  total: { fontFamily: fonts.textBold, fontSize: 17, color: colors.text, fontVariant: ['tabular-nums'] },
+  name: { fontFamily: fonts.text, fontSize: 15, color: colors.text },
+  status: { fontFamily: fonts.text, fontSize: 14, color: colors.muted },
+  statusNew: { color: colors.primary, fontFamily: fonts.textBold },
 });

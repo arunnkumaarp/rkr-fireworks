@@ -5,12 +5,35 @@ import type { Product } from '@/lib/api';
 import { formatRupees, toPaise } from '@/lib/format';
 
 import { QtyInput } from './qty-input';
-import { colors } from './theme';
+import { colors, fonts } from './theme';
 
-type Props = { product: Product; quantity: number; onChange: (product: Product, qty: number) => void };
+type Props = {
+  product: Product;
+  quantity: number;
+  onChange: (product: Product, qty: number) => void;
+  /** Wide screens show the printed price list's full columns. */
+  wide?: boolean;
+};
 
-export const ProductRow = memo(function ProductRow({ product, quantity, onChange }: Props) {
+export const ProductRow = memo(function ProductRow({ product, quantity, onChange, wide }: Props) {
   const amount = (toPaise(product.offer_price) * quantity) / 100;
+  const amountText = quantity > 0 ? formatRupees(amount) : '';
+  const qty = <QtyInput value={quantity} onChange={(q) => onChange(product, q)} label={product.name} />;
+
+  if (wide) {
+    return (
+      <View style={[styles.row, quantity > 0 && styles.rowActive]}>
+        <Text style={[styles.cell, styles.colCode]}>{product.code}</Text>
+        <Text style={[styles.cell, styles.colName, styles.name]}>{product.name}</Text>
+        <Text style={[styles.cell, styles.colMrp, styles.mrp]}>{formatRupees(product.mrp)}</Text>
+        <Text style={[styles.cell, styles.colUnit]}>1 {product.unit}</Text>
+        <Text style={[styles.cell, styles.colOffer, styles.offer]}>{formatRupees(product.offer_price)}</Text>
+        <View style={styles.colQty}>{qty}</View>
+        <Text style={[styles.cell, styles.colAmount, styles.amount]}>{amountText}</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.row, quantity > 0 && styles.rowActive]}>
       <Text style={styles.code}>{product.code}</Text>
@@ -23,35 +46,66 @@ export const ProductRow = memo(function ProductRow({ product, quantity, onChange
         </View>
       </View>
       <View style={styles.right}>
-        <QtyInput value={quantity} onChange={(q) => onChange(product, q)} label={product.name} />
-        <Text style={[styles.amount, quantity === 0 && styles.amountEmpty]}>
-          {quantity > 0 ? formatRupees(amount) : ' '}
-        </Text>
+        {qty}
+        <Text style={styles.amount}>{amountText || ' '}</Text>
       </View>
     </View>
   );
 });
+
+/** Column headings, set like the red bar at the top of each printed page. */
+export function PriceListHeader() {
+  return (
+    <View style={styles.header}>
+      <Text style={[styles.headCell, styles.colCode]}>Code</Text>
+      <Text style={[styles.headCell, styles.colName]}>Name of the product</Text>
+      <Text style={[styles.headCell, styles.colMrp]}>MRP</Text>
+      <Text style={[styles.headCell, styles.colUnit]}>Unit</Text>
+      <Text style={[styles.headCell, styles.colOffer]}>Offer price</Text>
+      <Text style={[styles.headCell, styles.colQty, styles.center]}>Qty</Text>
+      <Text style={[styles.headCell, styles.colAmount]}>Amount</Text>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     backgroundColor: colors.surface,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
-    gap: 10,
+    gap: 12,
   },
-  rowActive: { backgroundColor: '#FFF6E0' },
-  code: { width: 30, fontSize: 12, color: colors.muted, fontVariant: ['tabular-nums'] },
+  rowActive: { backgroundColor: '#FFF6DC' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 999,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    gap: 12,
+  },
+  headCell: { color: '#fff', fontFamily: fonts.textBold, fontSize: 14 },
+  center: { textAlign: 'center' },
+  cell: { fontFamily: fonts.text, fontSize: 15, color: colors.text, fontVariant: ['tabular-nums'] },
+  colCode: { width: 44 },
+  colName: { flex: 1 },
+  colMrp: { width: 96, textAlign: 'right' },
+  colUnit: { width: 60, textAlign: 'center' },
+  colOffer: { width: 100, textAlign: 'right' },
+  colQty: { width: 132, alignItems: 'center' },
+  colAmount: { width: 108, textAlign: 'right' },
+  code: { width: 30, fontFamily: fonts.text, fontSize: 13, color: colors.muted, fontVariant: ['tabular-nums'] },
   info: { flex: 1, gap: 3 },
-  name: { fontSize: 15, fontWeight: '600', color: colors.text },
+  name: { fontFamily: fonts.textSemi, fontSize: 16, color: colors.text },
   prices: { flexDirection: 'row', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' },
-  mrp: { fontSize: 12, color: colors.muted, textDecorationLine: 'line-through' },
-  offer: { fontSize: 15, fontWeight: '700', color: colors.green },
-  unit: { fontSize: 12, color: colors.muted },
+  mrp: { fontFamily: fonts.text, fontSize: 13, color: colors.muted, textDecorationLine: 'line-through' },
+  offer: { fontFamily: fonts.textBold, fontSize: 16, color: colors.green },
+  unit: { fontFamily: fonts.text, fontSize: 13, color: colors.muted },
   right: { alignItems: 'flex-end', gap: 4 },
-  amount: { fontSize: 13, fontWeight: '700', color: colors.text, fontVariant: ['tabular-nums'] },
-  amountEmpty: { color: 'transparent' },
+  amount: { fontFamily: fonts.textBold, fontSize: 14, color: colors.text, fontVariant: ['tabular-nums'] },
 });

@@ -4,7 +4,8 @@ import { Redirect, router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
-import { colors } from '@/components/theme';
+import { formatPhone } from '@/components/hero';
+import { colors, fonts } from '@/components/theme';
 import { api, type Estimate, type ShopSettings } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
 import { useShopSettings } from '@/lib/queries';
@@ -28,7 +29,7 @@ export default function EstimateScreen() {
   if (!estimate.data) {
     return (
       <View style={[styles.center, styles.pad]}>
-        <Text style={styles.body}>We couldn't find this estimate.</Text>
+        <Text style={styles.body}>We couldn’t find this estimate.</Text>
         <Button title="Back to price list" onPress={() => router.replace('/')} />
       </View>
     );
@@ -41,7 +42,7 @@ export default function EstimateScreen() {
         <Text style={styles.successTitle}>Estimate submitted</Text>
         <Text style={styles.number}>{e.number}</Text>
         <Text style={styles.successSub}>
-          Thank you, {e.customer_name}. We'll call you on {e.phone} to confirm your order.
+          Thank you, {e.customer_name}. We’ll call you on {e.phone} to confirm your order.
         </Text>
       </View>
 
@@ -53,7 +54,7 @@ export default function EstimateScreen() {
         />
       ) : null}
       {shop?.phone_primary ? (
-        <Button title={`Call ${shop.phone_primary}`} variant="secondary" onPress={() => Linking.openURL(`tel:${shop.phone_primary}`)} />
+        <Button title={`Call ${formatPhone(shop.phone_primary)}`} variant="secondary" onPress={() => Linking.openURL(`tel:${shop.phone_primary}`)} />
       ) : null}
 
       {shop && (shop.upi_id || shop.upi_qr || shop.bank_details) ? <PaymentCard shop={shop} total={e.total} /> : null}
@@ -129,18 +130,18 @@ const styles = StyleSheet.create({
   pad: { padding: 24, gap: 16 },
   container: { padding: 16, gap: 14, width: '100%', maxWidth: 640, alignSelf: 'center' },
   success: { backgroundColor: colors.green, borderRadius: 14, padding: 20, gap: 6, alignItems: 'center' },
-  successTitle: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  number: { color: '#fff', fontSize: 28, fontWeight: '800', letterSpacing: 1 },
-  successSub: { color: '#E3F4E7', fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  successTitle: { color: '#fff', fontFamily: fonts.textSemi, fontSize: 16, },
+  number: { color: '#fff', fontFamily: fonts.display, fontSize: 28, letterSpacing: 1 },
+  successSub: { color: '#E3F4E7', fontFamily: fonts.text, fontSize: 14, textAlign: 'center', lineHeight: 20 },
   card: { backgroundColor: colors.surfaceAlt, borderRadius: 14, padding: 16, gap: 8 },
-  cardTitle: { fontSize: 16, fontWeight: '800', color: colors.text },
-  body: { fontSize: 15, color: colors.text, lineHeight: 21 },
+  cardTitle: { fontFamily: fonts.textBold, fontSize: 16, color: colors.text },
+  body: { fontFamily: fonts.text, fontSize: 15, color: colors.text, lineHeight: 21 },
   qr: { width: 220, height: 220, alignSelf: 'center', marginVertical: 8 },
-  upi: { fontSize: 16, fontWeight: '700', color: colors.purple, textAlign: 'center' },
+  upi: { fontFamily: fonts.textBold, fontSize: 16, color: colors.purple, textAlign: 'center' },
   itemRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
-  itemName: { flex: 1, fontSize: 14, color: colors.text },
-  itemAmount: { fontSize: 14, color: colors.text, fontVariant: ['tabular-nums'] },
-  lineLabel: { fontSize: 14, color: colors.muted },
-  bold: { fontSize: 17, fontWeight: '800', color: colors.text },
+  itemName: { flex: 1, fontFamily: fonts.text, fontSize: 14, color: colors.text },
+  itemAmount: { fontFamily: fonts.text, fontSize: 14, color: colors.text, fontVariant: ['tabular-nums'] },
+  lineLabel: { fontFamily: fonts.text, fontSize: 14, color: colors.muted },
+  bold: { fontFamily: fonts.textBold, fontSize: 17, color: colors.text },
   divider: { height: 1, backgroundColor: colors.border, marginVertical: 4 },
 });

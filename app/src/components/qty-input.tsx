@@ -1,16 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { MAX_QTY } from '@/store/cart';
 
-import { colors } from './theme';
+import { colors, fonts } from './theme';
 
 type Props = { value: number; onChange: (qty: number) => void; label: string };
 
 export function QtyInput({ value, onChange, label }: Props) {
   // Local text so the field can be empty while typing.
   const [text, setText] = useState(value ? String(value) : '');
-  useEffect(() => setText(value ? String(value) : ''), [value]);
+  const [shown, setShown] = useState(value);
+  if (value !== shown) {
+    setShown(value);
+    setText(value ? String(value) : '');
+  }
 
   return (
     <View style={styles.row}>
@@ -60,7 +64,7 @@ const styles = StyleSheet.create({
   },
   btnDisabled: { opacity: 0.4 },
   btnPlus: { backgroundColor: colors.primary, borderColor: colors.primary },
-  btnText: { fontSize: 18, fontWeight: '600', color: colors.text, lineHeight: 20 },
+  btnText: { fontFamily: fonts.textSemi, fontSize: 18, color: colors.text, lineHeight: 20 },
   btnPlusText: { color: '#fff' },
   input: {
     width: 44,
@@ -69,8 +73,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     textAlign: 'center',
-    fontSize: 15,
-    fontWeight: '600',
+    fontFamily: fonts.textSemi, fontSize: 15,
     color: colors.text,
     backgroundColor: colors.surface,
     padding: 0,

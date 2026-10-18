@@ -36,3 +36,9 @@ def test_product_api_filters_and_hides_inactive(imported):
 def test_search_by_code(imported):
     data = APIClient().get("/api/v1/products/", {"search": "163"}).json()
     assert [p["name"] for p in data] == ["Kohinoor Gift Box"]
+
+
+def test_categories_follow_price_list_order(imported):
+    names = [c["name"] for c in APIClient().get("/api/v1/categories/").json()]
+    assert names[:3] == ["Single Sound Crackers", "Bijili Crackers", "Bombs"]
+    assert names[-1] == "RKR Toys Special Crackers"

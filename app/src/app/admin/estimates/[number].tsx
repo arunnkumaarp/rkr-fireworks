@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { QtyInput } from '@/components/qty-input';
-import { colors } from '@/components/theme';
+import { colors, fonts } from '@/components/theme';
 import { api, type AdminEstimate, type EstimatePatch } from '@/lib/api';
 import { formatRupees, toPaise } from '@/lib/format';
 import { ADMIN_STATUS_LABEL, STATUSES } from '@/lib/status';
@@ -43,10 +43,12 @@ export default function AdminEstimateDetail() {
   const queryClient = useQueryClient();
   const estimate = useQuery({ queryKey: ['admin', 'estimate', number], queryFn: () => api.admin.estimate(number) });
   const [draft, setDraft] = useState<Draft | null>(null);
-
-  useEffect(() => {
-    if (estimate.data) setDraft(toDraft(estimate.data));
-  }, [estimate.data]);
+  // Reset the draft whenever a fresh copy arrives from the server (first load or after saving).
+  const [draftOf, setDraftOf] = useState<AdminEstimate | undefined>();
+  if (estimate.data && estimate.data !== draftOf) {
+    setDraftOf(estimate.data);
+    setDraft(toDraft(estimate.data));
+  }
 
   const save = useMutation({
     mutationFn: (patch: EstimatePatch) => api.admin.updateEstimate(number, patch),
@@ -169,30 +171,30 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center' },
   container: { padding: 16, gap: 18, width: '100%', maxWidth: 720, alignSelf: 'center' },
   block: { gap: 10 },
-  title: { fontSize: 26, fontWeight: '800', color: colors.text },
-  heading: { fontSize: 18, fontWeight: '800', color: colors.text },
-  body: { fontSize: 15, color: colors.text, lineHeight: 22 },
-  hint: { fontSize: 14, color: colors.muted },
+  title: { fontFamily: fonts.display, fontSize: 26, color: colors.text },
+  heading: { fontFamily: fonts.textBold, fontSize: 18, color: colors.text },
+  body: { fontFamily: fonts.text, fontSize: 15, color: colors.text, lineHeight: 22 },
+  hint: { fontFamily: fonts.text, fontSize: 14, color: colors.muted },
   actions: { flexDirection: 'row', gap: 10 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.surfaceAlt },
   chipActive: { backgroundColor: colors.purple },
-  chipText: { fontSize: 14, fontWeight: '600', color: colors.text },
+  chipText: { fontFamily: fonts.textSemi, fontSize: 14, color: colors.text },
   chipTextActive: { color: '#fff' },
-  label: { fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 4 },
+  label: { fontFamily: fonts.textSemi, fontSize: 14, color: colors.text, marginBottom: 4 },
   input: {
     height: 44,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: 12,
-    fontSize: 16,
+    fontFamily: fonts.text, fontSize: 16,
     color: colors.text,
     backgroundColor: colors.surface,
   },
   item: { backgroundColor: colors.surfaceAlt, borderRadius: 12, padding: 12, gap: 8 },
   itemRemoved: { opacity: 0.45 },
-  itemName: { fontSize: 15, fontWeight: '600', color: colors.text },
+  itemName: { fontFamily: fonts.textSemi, fontSize: 15, color: colors.text },
   itemControls: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
   price: {
     width: 110,
@@ -201,10 +203,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: 10,
-    fontSize: 15,
+    fontFamily: fonts.text, fontSize: 15,
     color: colors.text,
     backgroundColor: colors.surface,
   },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
-  error: { color: colors.danger, fontWeight: '600', padding: 4 },
+  error: { color: colors.danger, fontFamily: fonts.textSemi, padding: 4 },
 });

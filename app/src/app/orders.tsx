@@ -3,7 +3,7 @@ import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
-import { colors } from '@/components/theme';
+import { colors, fonts } from '@/components/theme';
 import { api } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
 import { STATUS_LABEL } from '@/lib/status';
@@ -60,16 +60,16 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center' },
   container: { padding: 16, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' },
-  signedIn: { fontSize: 15, color: colors.text, marginBottom: 4 },
+  signedIn: { fontFamily: fonts.text, fontSize: 15, color: colors.text, marginBottom: 4 },
   card: { backgroundColor: colors.surfaceAlt, borderRadius: 14, padding: 16, gap: 4 },
   pressed: { opacity: 0.8 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  number: { fontSize: 18, fontWeight: '800', color: colors.text },
-  total: { fontSize: 18, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
-  status: { fontSize: 15, fontWeight: '600', color: colors.green },
+  number: { fontFamily: fonts.textBold, fontSize: 18, color: colors.text },
+  total: { fontFamily: fonts.textBold, fontSize: 18, color: colors.text, fontVariant: ['tabular-nums'] },
+  status: { fontFamily: fonts.textSemi, fontSize: 15, color: colors.green },
   cancelled: { color: colors.danger },
-  meta: { fontSize: 14, color: colors.muted },
+  meta: { fontFamily: fonts.text, fontSize: 14, color: colors.muted },
   empty: { paddingVertical: 32, gap: 16, alignItems: 'center' },
-  emptyText: { fontSize: 16, color: colors.text },
+  emptyText: { fontFamily: fonts.text, fontSize: 16, color: colors.text },
   logout: { marginTop: 12 },
 });

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
 
 import { Button } from '@/components/button';
-import { colors } from '@/components/theme';
+import { colors, fonts } from '@/components/theme';
 import { api } from '@/lib/api';
 import { useAuth } from '@/store/auth';
 
@@ -35,7 +35,7 @@ export default function LoginScreen() {
         {step === 'email' ? (
           <>
             <Text style={styles.title}>Log in with your email</Text>
-            <Text style={styles.body}>We'll email you a 6-digit code. No password needed.</Text>
+            <Text style={styles.body}>We’ll email you a 6-digit code. No password needed.</Text>
             <TextInput
               value={email}
               onChangeText={setEmail}
@@ -62,7 +62,7 @@ export default function LoginScreen() {
           <>
             <Text style={styles.title}>Enter the code</Text>
             <Text style={styles.body}>
-              Sent to {email.trim()}. It expires in 10 minutes. Check your spam folder if it hasn't arrived.
+              Sent to {email.trim()}. It expires in 10 minutes. Check your spam folder if it hasn’t arrived.
             </Text>
             <TextInput
               value={code}
@@ -98,8 +98,8 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   container: { padding: 20, gap: 14, width: '100%', maxWidth: 480, alignSelf: 'center' },
-  title: { fontSize: 28, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
-  body: { fontSize: 16, color: colors.text, lineHeight: 23 },
+  title: { fontFamily: fonts.display, fontSize: 28, color: colors.text, letterSpacing: -0.5 },
+  body: { fontFamily: fonts.text, fontSize: 16, color: colors.text, lineHeight: 23 },
   input: {
     height: 52,
     borderRadius: 10,
@@ -107,9 +107,9 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.surface,
     paddingHorizontal: 14,
-    fontSize: 17,
+    fontFamily: fonts.text, fontSize: 17,
     color: colors.text,
   },
-  codeInput: { fontSize: 26, letterSpacing: 8, textAlign: 'center', fontVariant: ['tabular-nums'] },
-  error: { color: colors.danger, fontWeight: '600' },
+  codeInput: { fontFamily: fonts.text, fontSize: 26, letterSpacing: 8, textAlign: 'center', fontVariant: ['tabular-nums'] },
+  error: { color: colors.danger, fontFamily: fonts.textSemi },
 });

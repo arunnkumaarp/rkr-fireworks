@@ -1,6 +1,6 @@
-import { Redirect, Stack } from 'expo-router';
+import { Link, Redirect, Stack } from 'expo-router';
 
-import { colors } from '@/components/theme';
+import { colors, fonts } from '@/components/theme';
 import { useAuth } from '@/store/auth';
 
 export default function AdminLayout() {
@@ -14,8 +14,13 @@ export default function AdminLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.purple },
         headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '700' },
+        headerTitleStyle: { fontFamily: fonts.display, fontSize: 22 },
         contentStyle: { backgroundColor: colors.background },
+        headerRight: () => (
+          <Link href="/" style={{ color: '#fff', fontFamily: fonts.textBold, fontSize: 15, paddingHorizontal: 12 }}>
+            View shop
+          </Link>
+        ),
       }}>
       <Stack.Screen name="index" options={{ title: 'Shop admin' }} />
       <Stack.Screen name="estimates/index" options={{ title: 'Estimates' }} />

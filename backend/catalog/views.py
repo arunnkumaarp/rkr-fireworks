@@ -13,7 +13,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return Category.objects.filter(is_active=True).annotate(
             product_count=Count("products", filter=Q(products__is_active=True))
-        )
+        ).order_by("sort_order", "name")  # Meta.ordering is dropped on GROUP BY queries
 
 
 class ProductViewSet(viewsets.ReadOnlyModelViewSet):

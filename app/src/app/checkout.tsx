@@ -1,10 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
-import { colors, MAX_CONTENT_WIDTH } from '@/components/theme';
+import { colors, MAX_CONTENT_WIDTH, fonts } from '@/components/theme';
 import { api, ApiError, type EstimateInput } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
 import { useShopSettings } from '@/lib/queries';
@@ -39,6 +39,23 @@ export default function CheckoutScreen() {
     phone: user?.phone ?? '',
   }));
   const [touched, setTouched] = useState(false);
+
+  // Returning customers: start from the details of their last estimate.
+  const last = useQuery({ queryKey: ['my-estimates', user?.id], queryFn: api.myEstimates, enabled: !!user });
+  const [prefilled, setPrefilled] = useState(false);
+  const e = last.data?.[0];
+  if (e && !prefilled) {
+    setPrefilled(true);
+    setForm((f) => ({
+      ...f,
+      customer_name: f.customer_name || e.customer_name,
+      phone: f.phone || e.phone,
+      address: f.address || e.address,
+      city: f.city || e.city,
+      state: e.state,
+      pincode: f.pincode || e.pincode,
+    }));
+  }
 
   const submit = useMutation({
     mutationFn: api.createEstimate,
@@ -101,7 +118,7 @@ export default function CheckoutScreen() {
           <Text style={styles.summaryTotal}>{formatRupees(totals.total)}</Text>
         </View>
         <Text style={styles.note}>
-          No payment now. After you submit, we'll call you to confirm the order and share payment details.
+          No payment now. After you submit, we’ll call you to confirm the order and share payment details.
         </Text>
         {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
         <Button title="Submit estimate" onPress={onSubmit} loading={submit.isPending} />
@@ -116,7 +133,7 @@ const styles = StyleSheet.create({
   container: { padding: 16, gap: 14, width: '100%', maxWidth: 640, alignSelf: 'center' },
   row: { flexDirection: 'row', gap: 12 },
   field: { gap: 6 },
-  label: { fontSize: 14, fontWeight: '600', color: colors.text },
+  label: { fontFamily: fonts.textSemi, fontSize: 14, color: colors.text },
   input: {
     minHeight: 46,
     borderRadius: 10,
@@ -125,12 +142,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontSize: 16,
+    fontFamily: fonts.text, fontSize: 16,
     color: colors.text,
   },
   multiline: { minHeight: 80, textAlignVertical: 'top' },
   inputError: { borderColor: colors.danger },
-  error: { color: colors.danger, fontSize: 13 },
+  error: { color: colors.danger, fontFamily: fonts.text, fontSize: 13 },
   summary: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -140,10 +157,10 @@ const styles = StyleSheet.create({
     padding: 14,
     marginTop: 6,
   },
-  summaryText: { color: colors.text, fontSize: 14 },
-  summaryTotal: { color: colors.text, fontSize: 20, fontWeight: '800' },
-  note: { fontSize: 13, color: colors.muted, lineHeight: 19 },
-  serverError: { color: colors.danger, fontWeight: '600' },
+  summaryText: { color: colors.text, fontFamily: fonts.text, fontSize: 14 },
+  summaryTotal: { color: colors.text, fontFamily: fonts.textBold, fontSize: 20, },
+  note: { fontFamily: fonts.text, fontSize: 13, color: colors.muted, lineHeight: 19 },
+  serverError: { color: colors.danger, fontFamily: fonts.textSemi },
 });
 
 void MAX_CONTENT_WIDTH;

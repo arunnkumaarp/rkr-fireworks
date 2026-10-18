@@ -1,32 +1,39 @@
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Linking,
   Pressable,
   ScrollView,
   SectionList,
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
+import { Banner } from '@/components/banner';
 import { Button } from '@/components/button';
 import { CartBar } from '@/components/cart-bar';
-import { ProductRow } from '@/components/product-row';
-import { colors, MAX_CONTENT_WIDTH } from '@/components/theme';
+import { Hero } from '@/components/hero';
+import { PriceListHeader, ProductRow } from '@/components/product-row';
+import { ShopFooter } from '@/components/shop-footer';
+import { bannerColors, colors, fonts, MAX_CONTENT_WIDTH, WIDE_BREAKPOINT } from '@/components/theme';
 import type { Product } from '@/lib/api';
 import { useCategories, useProducts, useShopSettings } from '@/lib/queries';
 import { syncCartWithCatalogue, useCart } from '@/store/cart';
 
-export default function QuickOrderScreen() {
+export default function PriceListScreen() {
   const products = useProducts();
   const categories = useCategories();
   const { data: shop } = useShopSettings();
   const lines = useCart((s) => s.lines);
   const setQuantity = useCart((s) => s.setQuantity);
-  const [search, setSearch] = useState('');
+  // ?q= pre-fills the search, so a link can open the list at e.g. gift boxes.
+  const { q } = useLocalSearchParams<{ q?: string }>();
+  const [search, setSearch] = useState(q ?? '');
   const [categoryId, setCategoryId] = useState<number | null>(null);
+  const wide = useWindowDimensions().width >= WIDE_BREAKPOINT;
 
   useEffect(() => {
     if (products.data) syncCartWithCatalogue(products.data);
@@ -39,7 +46,12 @@ export default function QuickOrderScreen() {
       (categoryId === null || p.category === categoryId) &&
       (!q || p.name.toLowerCase().includes(q) || String(p.code) === q);
     return categories.data
-      .map((c) => ({ key: String(c.id), title: c.name, data: products.data.filter(matches).filter((p) => p.category === c.id) }))
+      .map((c, i) => ({
+        key: String(c.id),
+        title: c.name,
+        color: bannerColors[i % bannerColors.length],
+        data: products.data.filter((p) => p.category === c.id && matches(p)),
+      }))
       .filter((s) => s.data.length > 0);
   }, [products.data, categories.data, search, categoryId]);
 
@@ -50,30 +62,21 @@ export default function QuickOrderScreen() {
     return (
       <View style={[styles.center, styles.errorBox]}>
         <Text style={styles.errorText}>Could not load the price list. Check your connection.</Text>
-        <Button title="Try again" onPress={() => { products.refetch(); categories.refetch(); }} />
+        <Button
+          title="Try again"
+          onPress={() => {
+            products.refetch();
+            categories.refetch();
+          }}
+        />
       </View>
     );
   }
 
   const header = (
     <View>
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>{shop?.shop_name ?? 'RKR Crackers'}</Text>
-        <Text style={styles.heroOffer}>{shop?.announcement || '80% off every cracker'}</Text>
-        <Text style={styles.heroSub}>
-          Fill in quantities and send your estimate. We'll call to confirm the order.
-          {shop ? ` Minimum order ₹${Number(shop.min_order_value).toLocaleString('en-IN')}.` : ''}
-        </Text>
-        {shop?.phone_primary ? (
-          <Pressable onPress={() => Linking.openURL(`tel:${shop.phone_primary}`)}>
-            <Text style={styles.heroPhone}>
-              Call {shop.phone_primary}
-              {shop.phone_secondary ? ` · ${shop.phone_secondary}` : ''}
-            </Text>
-          </Pressable>
-        ) : null}
-      </View>
-      <View style={styles.searchWrap}>
+      <Hero shop={shop} />
+      <View style={styles.tools}>
         <TextInput
           value={search}
           onChangeText={setSearch}
@@ -83,13 +86,14 @@ export default function QuickOrderScreen() {
           clearButtonMode="while-editing"
           accessibilityLabel="Search products"
         />
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+          <Chip label="All" active={categoryId === null} onPress={() => setCategoryId(null)} />
+          {categories.data.map((c) => (
+            <Chip key={c.id} label={c.name} active={categoryId === c.id} onPress={() => setCategoryId(c.id)} />
+          ))}
+        </ScrollView>
+        {wide && <PriceListHeader />}
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-        <Chip label="All" active={categoryId === null} onPress={() => setCategoryId(null)} />
-        {categories.data.map((c) => (
-          <Chip key={c.id} label={c.name} active={categoryId === c.id} onPress={() => setCategoryId(c.id)} />
-        ))}
-      </ScrollView>
     </View>
   );
 
@@ -97,26 +101,28 @@ export default function QuickOrderScreen() {
     <View style={styles.flex}>
       <SectionList
         style={styles.flex}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={styles.grow}
         sections={sections}
         keyExtractor={(p) => String(p.id)}
         ListHeaderComponent={header}
-        stickySectionHeadersEnabled
+        stickySectionHeadersEnabled={false}
         keyboardShouldPersistTaps="handled"
+        initialNumToRender={30}
         renderSectionHeader={({ section }) => (
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
+          <View style={styles.page}>
+            <Banner title={section.title} color={section.color} />
           </View>
         )}
         renderItem={({ item }) => (
-          <ProductRow product={item} quantity={lines[item.id]?.quantity ?? 0} onChange={setQuantity} />
+          <View style={styles.page}>
+            <ProductRow product={item} quantity={lines[item.id]?.quantity ?? 0} onChange={setQuantity} wide={wide} />
+          </View>
         )}
         ListEmptyComponent={<Text style={styles.empty}>No products match “{search}”.</Text>}
         ListFooterComponent={
-          <Text style={styles.footer}>
-            Prices include an 80% discount on MRP. Firecrackers are delivered only where sale is permitted.
-            Please follow safety guidelines and local timing rules.
-          </Text>
+          <View style={styles.footer}>
+            <ShopFooter shop={shop} />
+          </View>
         }
       />
       <CartBar />
@@ -140,36 +146,26 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   errorBox: { padding: 24, gap: 16 },
-  errorText: { fontSize: 16, color: colors.text, textAlign: 'center' },
-  list: { width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', paddingBottom: 24 },
-  hero: { backgroundColor: colors.purple, paddingHorizontal: 20, paddingVertical: 28, gap: 8 },
-  heroTitle: { color: '#fff', fontSize: 18, fontWeight: '700' },
-  heroOffer: { color: colors.gold, fontSize: 44, lineHeight: 46, fontWeight: '800', letterSpacing: -1 },
-  heroSub: { color: '#fff', fontSize: 16, lineHeight: 23, maxWidth: 560 },
-  heroPhone: { color: '#fff', fontSize: 15, fontWeight: '700', marginTop: 4, textDecorationLine: 'underline' },
-  searchWrap: { padding: 12, backgroundColor: colors.background },
+  errorText: { fontFamily: fonts.text, fontSize: 16, color: colors.text, textAlign: 'center' },
+  page: { width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center' },
+  tools: { width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', padding: 16, gap: 12 },
   search: {
-    height: 44,
-    borderRadius: 12,
+    height: 48,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.surface,
     paddingHorizontal: 14,
     fontSize: 16,
+    fontFamily: fonts.text,
     color: colors.text,
   },
-  chips: { paddingHorizontal: 12, paddingBottom: 12, gap: 8 },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: colors.surfaceAlt,
-  },
+  chips: { gap: 8 },
+  chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999, backgroundColor: colors.surfaceAlt },
   chipActive: { backgroundColor: colors.primary },
-  chipText: { fontSize: 14, fontWeight: '600', color: colors.text },
+  chipText: { fontFamily: fonts.textSemi, fontSize: 14, color: colors.text },
   chipTextActive: { color: '#fff' },
-  sectionHeader: { backgroundColor: colors.sectionBg, paddingHorizontal: 12, paddingVertical: 10 },
-  sectionTitle: { fontSize: 17, fontWeight: '800', color: colors.primaryDark },
-  empty: { padding: 24, textAlign: 'center', color: colors.muted },
-  footer: { padding: 16, fontSize: 13, color: colors.muted, lineHeight: 18, textAlign: 'center' },
+  empty: { padding: 24, textAlign: 'center', color: colors.muted, fontFamily: fonts.text },
+  grow: { flexGrow: 1 },
+  footer: { marginTop: 'auto', paddingTop: 48 },
 });

@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
-import { colors } from '@/components/theme';
+import { colors, fonts } from '@/components/theme';
 import { api } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
 import { useAuth } from '@/store/auth';
@@ -76,16 +76,16 @@ const styles = StyleSheet.create({
   error: { padding: 20, color: colors.danger },
   container: { padding: 16, gap: 14, width: '100%', maxWidth: 720, alignSelf: 'center' },
   lead: { backgroundColor: colors.primary, borderRadius: 14, padding: 20 },
-  leadNumber: { color: '#fff', fontSize: 56, lineHeight: 60, fontWeight: '800', letterSpacing: -1 },
-  leadText: { color: '#fff', fontSize: 17, fontWeight: '600' },
+  leadNumber: { color: '#fff', fontFamily: fonts.display, fontSize: 56, lineHeight: 60, letterSpacing: -1 },
+  leadText: { color: '#fff', fontFamily: fonts.textSemi, fontSize: 17, },
   facts: { flexDirection: 'row', flexWrap: 'wrap', backgroundColor: colors.surfaceAlt, borderRadius: 14, paddingVertical: 8 },
   fact: { width: '50%', padding: 12, gap: 2 },
-  factValue: { fontSize: 22, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
-  factLabel: { fontSize: 14, color: colors.text },
+  factValue: { fontFamily: fonts.textBold, fontSize: 22, color: colors.text, fontVariant: ['tabular-nums'] },
+  factLabel: { fontFamily: fonts.text, fontSize: 14, color: colors.text },
   block: { gap: 8, marginTop: 8 },
-  heading: { fontSize: 20, fontWeight: '800', color: colors.text },
+  heading: { fontFamily: fonts.textBold, fontSize: 20, color: colors.text },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
-  rowName: { flex: 1, fontSize: 15, color: colors.text },
-  rowQty: { fontSize: 15, fontWeight: '700', color: colors.text, fontVariant: ['tabular-nums'] },
-  note: { fontSize: 14, color: colors.muted, lineHeight: 20, marginTop: 8 },
+  rowName: { flex: 1, fontFamily: fonts.text, fontSize: 15, color: colors.text },
+  rowQty: { fontFamily: fonts.textBold, fontSize: 15, color: colors.text, fontVariant: ['tabular-nums'] },
+  note: { fontFamily: fonts.text, fontSize: 14, color: colors.muted, lineHeight: 20, marginTop: 8 },
 });

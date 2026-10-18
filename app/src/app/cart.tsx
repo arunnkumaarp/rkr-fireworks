@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { ProductRow } from '@/components/product-row';
-import { colors, MAX_CONTENT_WIDTH } from '@/components/theme';
+import { colors, MAX_CONTENT_WIDTH, fonts } from '@/components/theme';
 import { formatRupees } from '@/lib/format';
 import { useShopSettings } from '@/lib/queries';
 import { cartTotals, useCart } from '@/store/cart';
@@ -79,15 +79,15 @@ const styles = StyleSheet.create({
   card: { backgroundColor: colors.surfaceAlt, borderRadius: 14, overflow: 'hidden' },
   totals: { padding: 16, gap: 10 },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
-  rowLabel: { fontSize: 15, color: colors.muted },
-  rowValue: { fontSize: 15, color: colors.text, fontVariant: ['tabular-nums'] },
-  bold: { fontSize: 18, fontWeight: '800', color: colors.text },
+  rowLabel: { fontFamily: fonts.text, fontSize: 15, color: colors.muted },
+  rowValue: { fontFamily: fonts.text, fontSize: 15, color: colors.text, fontVariant: ['tabular-nums'] },
+  bold: { fontFamily: fonts.textBold, fontSize: 18, color: colors.text },
   strike: { textDecorationLine: 'line-through', color: colors.muted },
-  highlight: { color: colors.green, fontWeight: '700' },
+  highlight: { color: colors.green, fontFamily: fonts.textBold },
   divider: { height: 1, backgroundColor: colors.border },
-  note: { fontSize: 12, color: colors.muted },
-  warn: { color: colors.danger, fontWeight: '600', textAlign: 'center' },
+  note: { fontFamily: fonts.text, fontSize: 12, color: colors.muted },
+  warn: { color: colors.danger, fontFamily: fonts.textSemi, textAlign: 'center' },
   emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 12 },
-  emptyTitle: { fontSize: 20, fontWeight: '800', color: colors.text },
-  emptySub: { fontSize: 15, color: colors.muted, textAlign: 'center', marginBottom: 8 },
+  emptyTitle: { fontFamily: fonts.textBold, fontSize: 20, color: colors.text },
+  emptySub: { fontFamily: fonts.text, fontSize: 15, color: colors.muted, textAlign: 'center', marginBottom: 8 },
 });
