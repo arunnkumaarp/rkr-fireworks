@@ -6,7 +6,7 @@ import { formatRupees } from '@/lib/format';
 import { useShopSettings } from '@/lib/queries';
 import { cartTotals, useCart } from '@/store/cart';
 
-import { colors, MAX_CONTENT_WIDTH, fonts } from './theme';
+import { colors, MAX_CONTENT_WIDTH, type } from './theme';
 import { PressScale } from './press-scale';
 
 export function CartBar() {
@@ -54,9 +54,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   summary: { flex: 1, gap: 2 },
-  total: { color: colors.text, fontFamily: fonts.textBold, fontSize: 20, },
-  meta: { color: colors.muted, fontFamily: fonts.text, fontSize: 12 },
-  warn: { color: colors.gold, fontFamily: fonts.textSemi, fontSize: 12, },
+  total: { color: colors.text, ...type.semibold, fontSize: 20, },
+  meta: { color: colors.muted, ...type.regular, fontSize: 12 },
+  warn: { color: colors.gold, ...type.medium, fontSize: 12, },
   btn: { backgroundColor: colors.gold, borderRadius: 999, paddingHorizontal: 18, paddingVertical: 12 },
-  btnText: { color: colors.onPrimary, fontFamily: fonts.textBold, fontSize: 15 },
+  btnText: { color: colors.onPrimary, ...type.semibold, fontSize: 15 },
 });

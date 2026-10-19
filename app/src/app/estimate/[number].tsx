@@ -5,7 +5,7 @@ import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, View } from '
 
 import { Button } from '@/components/button';
 import { formatPhone } from '@/components/hero';
-import { colors, fonts } from '@/components/theme';
+import { colors, fonts, type } from '@/components/theme';
 import { api, type Estimate, type ShopSettings } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
 import { useShopSettings } from '@/lib/queries';
@@ -131,18 +131,18 @@ const styles = StyleSheet.create({
   pad: { padding: 24, gap: 16 },
   container: { padding: 16, gap: 14, width: '100%', maxWidth: 640, alignSelf: 'center' },
   success: { backgroundColor: colors.sectionBg, borderRadius: 14, padding: 20, gap: 6, alignItems: 'center' },
-  successTitle: { color: colors.text, fontFamily: fonts.textSemi, fontSize: 16, },
+  successTitle: { color: colors.text, ...type.medium, fontSize: 16, },
   number: { color: colors.gold, fontFamily: fonts.display, fontSize: 28, letterSpacing: 1 },
-  successSub: { color: colors.muted, fontFamily: fonts.text, fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  successSub: { color: colors.muted, ...type.regular, fontSize: 14, textAlign: 'center', lineHeight: 20 },
   card: { backgroundColor: colors.surfaceAlt, borderRadius: 14, padding: 16, gap: 8 },
-  cardTitle: { fontFamily: fonts.textBold, fontSize: 16, color: colors.text },
-  body: { fontFamily: fonts.text, fontSize: 15, color: colors.text, lineHeight: 21 },
+  cardTitle: { ...type.semibold, fontSize: 16, color: colors.text },
+  body: { ...type.regular, fontSize: 15, color: colors.text, lineHeight: 21 },
   qr: { width: 220, height: 220, alignSelf: 'center', marginVertical: 8 },
-  upi: { fontFamily: fonts.textBold, fontSize: 16, color: colors.purple, textAlign: 'center' },
+  upi: { ...type.semibold, fontSize: 16, color: colors.purple, textAlign: 'center' },
   itemRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
-  itemName: { flex: 1, fontFamily: fonts.text, fontSize: 14, color: colors.text },
-  itemAmount: { fontFamily: fonts.text, fontSize: 14, color: colors.text, fontVariant: ['tabular-nums'] },
-  lineLabel: { fontFamily: fonts.text, fontSize: 14, color: colors.muted },
-  bold: { fontFamily: fonts.textBold, fontSize: 17, color: colors.text },
+  itemName: { flex: 1, ...type.regular, fontSize: 14, color: colors.text },
+  itemAmount: { ...type.regular, fontSize: 14, color: colors.text, fontVariant: ['tabular-nums'] },
+  lineLabel: { ...type.regular, fontSize: 14, color: colors.muted },
+  bold: { ...type.semibold, fontSize: 17, color: colors.text },
   divider: { height: 1, backgroundColor: colors.border, marginVertical: 4 },
 });

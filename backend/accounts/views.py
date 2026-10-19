@@ -1,3 +1,6 @@
+import logging
+import smtplib
+
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
@@ -10,6 +13,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from content.models import ShopSettings
 
 from .models import EmailOTP, User
+
+log = logging.getLogger(__name__)
 
 
 class EmailSerializer(serializers.Serializer):
@@ -49,13 +54,18 @@ def send_otp(request):
 
     code = EmailOTP.issue(email)
     shop = ShopSettings.load().shop_name
-    send_mail(
-        subject=f"{code} is your {shop} login code",
-        message=f"Your {shop} login code is {code}.\nIt expires in 10 minutes. "
-                "If you didn't ask for it, ignore this email.",
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[email],
-    )
+    try:
+        send_mail(
+            subject=f"{code} is your {shop} login code",
+            message=f"Your {shop} login code is {code}.\nIt expires in 10 minutes. "
+                    "If you didn't ask for it, ignore this email.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+        )
+    except (smtplib.SMTPException, OSError):
+        log.exception("Could not email the login code to %s", email)
+        return Response({"detail": "We couldn't send the email just now. Please try again in a minute."},
+                        status=status.HTTP_503_SERVICE_UNAVAILABLE)
     return Response({"detail": "Code sent."})
 
 

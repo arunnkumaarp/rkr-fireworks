@@ -117,13 +117,18 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Development prints emails to the console; set EMAIL_HOST etc. (e.g. Brevo SMTP) in production.
-EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+# Development prints emails to the console; set EMAIL_HOST etc. (Gmail or Brevo SMTP) to send them.
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+# Gmail app passwords are shown with spaces; SMTP wants them without.
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "").replace(" ", "")
 EMAIL_USE_TLS = True
+EMAIL_TIMEOUT = 15
+# Without a password the SMTP login would fail, so codes keep going to the console instead.
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+if not EMAIL_HOST_PASSWORD:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "RKR Crackers <no-reply@localhost>")
 
 SIMPLE_JWT = {

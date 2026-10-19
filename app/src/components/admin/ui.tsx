@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { Children, type ReactNode, useState } from 'react';
 import {
   ActivityIndicator,
@@ -13,12 +13,14 @@ import {
   TextInput,
   type TextInputProps,
   useWindowDimensions,
+  Switch,
   View,
   type ViewStyle,
 } from 'react-native';
 
+import { haptic, isIOS, isNative, surface, Touchable } from '@/components/native';
 import { PressScale } from '@/components/press-scale';
-import { colors, fonts } from '@/components/theme';
+import { colors, fonts, type } from '@/components/theme';
 import type { Tone } from '@/lib/status';
 
 export const SIDEBAR_BREAKPOINT = 1024;
@@ -65,6 +67,26 @@ type PageProps = {
 
 export function Page({ title, lead, actions, back, children, refreshing, onRefresh }: PageProps) {
   const { medium } = useLayout();
+  if (isNative) {
+    return (
+      <ScrollView
+        style={styles.page}
+        contentContainerStyle={[styles.pageInner, styles.pageNative]}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={admin.gold} /> : undefined}>
+        <Stack.Screen options={{ title }} />
+        {lead || actions ? (
+          <View style={styles.head}>
+            {lead ? <Text style={styles.leadNative}>{lead}</Text> : null}
+            {actions ? <View style={styles.headActions}>{actions}</View> : null}
+          </View>
+        ) : null}
+        {children}
+      </ScrollView>
+    );
+  }
   return (
     <ScrollView
       style={styles.page}
@@ -261,6 +283,22 @@ export function Field({ label, error, hint, style, ...input }: TextInputProps & 
 }
 
 export function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+  if (isNative) {
+    return (
+      <View style={styles.toggle}>
+        <Switch
+          value={value}
+          onValueChange={(v) => {
+            haptic.tap();
+            onChange(v);
+          }}
+          trackColor={{ true: colors.green, false: admin.line }}
+          accessibilityLabel={label}
+        />
+        <Text style={styles.toggleText}>{label}</Text>
+      </View>
+    );
+  }
   return (
     <Pressable accessibilityRole="switch" accessibilityState={{ checked: value }} onPress={() => onChange(!value)} style={styles.toggle}>
       <View style={[styles.track, value && styles.trackOn]}>
@@ -306,6 +344,44 @@ export function Table<T>({
   const { medium } = useLayout();
   if (loading && !rows) return <Loading />;
   if (!rows?.length) return <Text style={styles.empty}>{empty}</Text>;
+
+  if (!medium && isNative) {
+    const [first, ...rest] = columns;
+    return (
+      <View style={styles.nativeGroup}>
+        {rows.map((row, i) => {
+          const inner = (
+            <View style={styles.nativeRow}>
+              <View style={styles.nativeRowMain}>
+                <View style={styles.flex1}>{cell(first.render(row), styles.cardTitleText)}</View>
+                {onRowPress && isIOS ? <Text style={styles.chevron}>›</Text> : null}
+              </View>
+              {rest
+                .filter((c) => !c.hideOnPhone)
+                .map((c) => (
+                  <View key={c.key} style={styles.cardLine}>
+                    <Text style={styles.cardLabel}>{c.label}</Text>
+                    <View style={styles.cardValue}>{cell(c.render(row), styles.td, 'right')}</View>
+                  </View>
+                ))}
+            </View>
+          );
+          return (
+            <View key={keyOf(row)}>
+              {i > 0 ? <View style={styles.nativeSeparator} /> : null}
+              {onRowPress ? (
+                <Touchable accessibilityRole="button" onPress={() => onRowPress(row)}>
+                  {inner}
+                </Touchable>
+              ) : (
+                inner
+              )}
+            </View>
+          );
+        })}
+      </View>
+    );
+  }
 
   if (!medium) {
     const [first, ...rest] = columns;
@@ -411,8 +487,25 @@ export function Note({ children }: { children: ReactNode }) {
 
 export function Sheet({ visible, title, onClose, children }: { visible: boolean; title: string; onClose: () => void; children: ReactNode }) {
   const { medium } = useLayout();
+  if (isIOS) {
+    return (
+      <Modal visible={visible} presentationStyle="pageSheet" animationType="slide" onRequestClose={onClose}>
+        <View style={styles.pageSheet}>
+          <View style={styles.pageSheetBar}>
+            <Text style={styles.pageSheetTitle}>{title}</Text>
+            <Pressable accessibilityRole="button" onPress={onClose} hitSlop={12} style={styles.pageSheetDone}>
+              <Text style={styles.pageSheetDoneText}>Cancel</Text>
+            </Pressable>
+          </View>
+          <ScrollView contentContainerStyle={styles.sheetBody} keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive">
+            {children}
+          </ScrollView>
+        </View>
+      </Modal>
+    );
+  }
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType={isNative ? 'slide' : 'fade'} onRequestClose={onClose} statusBarTranslucent>
       <Pressable style={styles.scrim} onPress={onClose} accessibilityLabel="Close" />
       <View style={[styles.sheetWrap, medium && styles.sheetWrapWide]} pointerEvents="box-none">
         <View style={[styles.sheet, medium && styles.sheetWide]}>
@@ -457,32 +550,45 @@ export const fieldErrors = (error: unknown): Record<string, string> => {
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: admin.ground },
   pageInner: { padding: 16, paddingBottom: 64, gap: 28, width: '100%', maxWidth: 1280, alignSelf: 'center' },
+  pageNative: { paddingTop: 8, gap: 24 },
+  leadNative: { color: admin.soft, ...type.regular, fontSize: 15, lineHeight: 21 },
+  nativeGroup: { backgroundColor: surface.group, borderRadius: isIOS ? 12 : 16, overflow: 'hidden' },
+  nativeRow: { paddingHorizontal: 16, paddingVertical: 12, gap: 6 },
+  nativeRowMain: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  nativeSeparator: { height: StyleSheet.hairlineWidth, backgroundColor: surface.separator, marginLeft: 16 },
+  chevron: { color: '#5E5852', fontSize: 24, lineHeight: 26 },
+  flex1: { flex: 1 },
+  pageSheet: { flex: 1, backgroundColor: admin.panel },
+  pageSheetBar: { height: 56, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 16 },
+  pageSheetTitle: { color: admin.ink, ...type.semibold, fontSize: 17 },
+  pageSheetDone: { position: 'absolute', left: 16, top: 0, bottom: 0, justifyContent: 'center' },
+  pageSheetDoneText: { color: admin.gold, ...type.regular, fontSize: 17 },
   pageInnerWide: { padding: 32, paddingBottom: 96, gap: 40 },
-  back: { color: admin.soft, fontFamily: fonts.textSemi, fontSize: 15, marginBottom: -12 },
+  back: { color: admin.soft, ...type.medium, fontSize: 15, marginBottom: -12 },
   head: { gap: 16 },
   headWide: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
   headText: { gap: 6, flexShrink: 1 },
   title: { color: admin.ink, fontFamily: fonts.display, fontSize: 34, lineHeight: 38, letterSpacing: -0.6 },
   titleWide: { fontSize: 48, lineHeight: 52, letterSpacing: -1.2 },
-  lead: { color: admin.soft, fontFamily: fonts.text, fontSize: 16, lineHeight: 24, maxWidth: 640 },
+  lead: { color: admin.soft, ...type.regular, fontSize: 16, lineHeight: 24, maxWidth: 640 },
   headActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
 
   section: { gap: 14 },
   sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' },
-  sectionTitle: { color: admin.ink, fontFamily: fonts.textBold, fontSize: 20 },
+  sectionTitle: { color: admin.ink, ...type.semibold, fontSize: 20 },
   panel: { backgroundColor: admin.panel, borderRadius: 16, padding: 18, gap: 12 },
 
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   stat: { flexGrow: 1, flexBasis: 150, backgroundColor: admin.panel, borderRadius: 16, padding: 18, gap: 4, minWidth: 140 },
   statBig: { flexBasis: 260, backgroundColor: admin.raised },
-  statValue: { color: admin.ink, fontFamily: fonts.textBold, fontSize: 28, lineHeight: 34, fontVariant: ['tabular-nums'], letterSpacing: -0.5 },
+  statValue: { color: admin.ink, ...type.semibold, fontSize: 28, lineHeight: 34, fontVariant: ['tabular-nums'], letterSpacing: -0.5 },
   statValueBig: { fontFamily: fonts.display, fontSize: 52, lineHeight: 56, letterSpacing: -1.5 },
-  statLabel: { color: admin.ink, fontFamily: fonts.textSemi, fontSize: 15 },
-  statNote: { color: admin.muted, fontFamily: fonts.text, fontSize: 14 },
+  statLabel: { color: admin.ink, ...type.medium, fontSize: 15 },
+  statNote: { color: admin.muted, ...type.regular, fontSize: 14 },
 
   pill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' },
   pillDot: { width: 6, height: 6, borderRadius: 3 },
-  pillText: { fontFamily: fonts.textSemi, fontSize: 13 },
+  pillText: { ...type.medium, fontSize: 13 },
 
   btn: { minHeight: 44, paddingHorizontal: 18, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   btnSmall: { minHeight: 34, paddingHorizontal: 14 },
@@ -490,7 +596,7 @@ const styles = StyleSheet.create({
   btn_quiet: { backgroundColor: admin.raised },
   btn_danger: { backgroundColor: TONES.red.bg },
   btnOff: { opacity: 0.45 },
-  btnText: { color: admin.ink, fontFamily: fonts.textBold, fontSize: 15 },
+  btnText: { color: admin.ink, ...type.semibold, fontSize: 15 },
   btnTextSmall: { fontSize: 14 },
   btnTextPrimary: { color: colors.onPrimary },
   btnTextDanger: { color: TONES.red.fg },
@@ -499,23 +605,23 @@ const styles = StyleSheet.create({
   chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: admin.panel },
   chipOn: { backgroundColor: admin.ink },
-  chipText: { color: admin.soft, fontFamily: fonts.textSemi, fontSize: 14, fontVariant: ['tabular-nums'] },
+  chipText: { color: admin.soft, ...type.medium, fontSize: 14, fontVariant: ['tabular-nums'] },
   chipTextOn: { color: admin.ground },
 
   search: {
     height: 46, borderRadius: 999, paddingHorizontal: 18, backgroundColor: admin.panel,
-    color: admin.ink, fontFamily: fonts.text, fontSize: 16, flexGrow: 1, minWidth: 200,
+    color: admin.ink, ...type.regular, fontSize: 16, flexGrow: 1, minWidth: 200,
   },
   field: { gap: 6, flexGrow: 1, flexBasis: 200 },
-  fieldLabel: { color: admin.ink, fontFamily: fonts.textSemi, fontSize: 14 },
+  fieldLabel: { color: admin.ink, ...type.medium, fontSize: 14 },
   input: {
     minHeight: 44, borderRadius: 10, borderWidth: 1, borderColor: admin.line, paddingHorizontal: 12,
-    backgroundColor: admin.well, color: admin.ink, fontFamily: fonts.text, fontSize: 16,
+    backgroundColor: admin.well, color: admin.ink, ...type.regular, fontSize: 16,
   },
   inputMulti: { minHeight: 88, paddingTop: 10, textAlignVertical: 'top' },
   inputError: { borderColor: colors.danger },
-  fieldError: { color: colors.danger, fontFamily: fonts.text, fontSize: 13 },
-  fieldHint: { color: admin.muted, fontFamily: fonts.text, fontSize: 13 },
+  fieldError: { color: colors.danger, ...type.regular, fontSize: 13 },
+  fieldHint: { color: admin.muted, ...type.regular, fontSize: 13 },
   formRow: { gap: 14 },
   formRowWide: { flexDirection: 'row', flexWrap: 'wrap' },
 
@@ -524,33 +630,33 @@ const styles = StyleSheet.create({
   trackOn: { backgroundColor: colors.green },
   knob: { width: 18, height: 18, borderRadius: 9, backgroundColor: admin.soft },
   knobOn: { transform: [{ translateX: 18 }], backgroundColor: admin.ground },
-  toggleText: { color: admin.ink, fontFamily: fonts.text, fontSize: 15 },
+  toggleText: { color: admin.ink, ...type.regular, fontSize: 15 },
 
   table: { backgroundColor: admin.panel, borderRadius: 16, paddingVertical: 4, overflow: 'hidden' },
   thead: { backgroundColor: admin.panel },
   tr: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 18, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: admin.line },
   trHover: { backgroundColor: admin.raised },
-  th: { color: admin.muted, fontFamily: fonts.textSemi, fontSize: 14 },
-  td: { color: admin.ink, fontFamily: fonts.text, fontSize: 15 },
+  th: { color: admin.muted, ...type.medium, fontSize: 14 },
+  td: { color: admin.ink, ...type.regular, fontSize: 15 },
   num: { fontVariant: ['tabular-nums'], textAlign: 'right' },
 
   cards: { gap: 10 },
   card: { backgroundColor: admin.panel, borderRadius: 14, padding: 14, gap: 6 },
   cardTitle: { marginBottom: 2 },
-  cardTitleText: { color: admin.ink, fontFamily: fonts.textBold, fontSize: 16 },
+  cardTitleText: { color: admin.ink, ...type.semibold, fontSize: 16 },
   cardLine: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
-  cardLabel: { color: admin.muted, fontFamily: fonts.text, fontSize: 14 },
+  cardLabel: { color: admin.muted, ...type.regular, fontSize: 14 },
   cardValue: { flexShrink: 1, alignItems: 'flex-end' },
 
   line: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 16, paddingVertical: 2 },
-  lineLabel: { color: admin.soft, fontFamily: fonts.text, fontSize: 15 },
-  lineValue: { color: admin.ink, fontFamily: fonts.textSemi, fontSize: 15, fontVariant: ['tabular-nums'], textAlign: 'right', flexShrink: 1 },
-  lineStrong: { fontFamily: fonts.textBold, fontSize: 18 },
+  lineLabel: { color: admin.soft, ...type.regular, fontSize: 15 },
+  lineValue: { color: admin.ink, ...type.medium, fontSize: 15, fontVariant: ['tabular-nums'], textAlign: 'right', flexShrink: 1 },
+  lineStrong: { ...type.semibold, fontSize: 18 },
 
   loading: { paddingVertical: 48 },
-  empty: { color: admin.muted, fontFamily: fonts.text, fontSize: 15, paddingVertical: 24, textAlign: 'center' },
-  error: { color: colors.danger, fontFamily: fonts.textSemi, fontSize: 15 },
-  note: { color: admin.muted, fontFamily: fonts.text, fontSize: 14, lineHeight: 21 },
+  empty: { color: admin.muted, ...type.regular, fontSize: 15, paddingVertical: 24, textAlign: 'center' },
+  error: { color: colors.danger, ...type.medium, fontSize: 15 },
+  note: { color: admin.muted, ...type.regular, fontSize: 14, lineHeight: 21 },
 
   scrim: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.6)' },
   sheetWrap: { flex: 1, justifyContent: 'flex-end' },
@@ -563,6 +669,6 @@ const styles = StyleSheet.create({
   sheetWide: { borderRadius: 20, width: '100%', maxWidth: 560 },
   sheetHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, paddingBottom: 8 },
   sheetTitle: { color: admin.ink, fontFamily: fonts.display, fontSize: 28 },
-  sheetClose: { color: admin.soft, fontFamily: fonts.textSemi, fontSize: 15 },
+  sheetClose: { color: admin.soft, ...type.medium, fontSize: 15 },
   sheetBody: { padding: 20, paddingTop: 8, gap: 14 },
 });

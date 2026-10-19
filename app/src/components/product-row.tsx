@@ -1,11 +1,11 @@
 import { memo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import type { Product } from '@/lib/api';
 import { formatRupees, toPaise } from '@/lib/format';
 
 import { QtyInput } from './qty-input';
-import { colors, fonts } from './theme';
+import { colors, type } from './theme';
 
 type Props = {
   product: Product;
@@ -30,6 +30,25 @@ export const ProductRow = memo(function ProductRow({ product, quantity, onChange
         <Text style={[styles.cell, styles.colOffer, styles.offer]}>{formatRupees(product.offer_price)}</Text>
         <View style={styles.colQty}>{qty}</View>
         <Text style={[styles.cell, styles.colAmount, styles.amount]}>{amountText}</Text>
+      </View>
+    );
+  }
+
+  if (Platform.OS !== 'web') {
+    return (
+      <View style={styles.nativeCell}>
+        <View style={styles.info}>
+          <Text style={styles.cellName}>{product.name}</Text>
+          <View style={styles.prices}>
+            <Text style={styles.cellOffer}>{formatRupees(product.offer_price)}</Text>
+            <Text style={styles.mrp}>{formatRupees(product.mrp)}</Text>
+            <Text style={styles.unit}>
+              / {product.unit} · #{product.code}
+            </Text>
+          </View>
+          {quantity > 0 ? <Text style={styles.cellAmount}>{amountText}</Text> : null}
+        </View>
+        {qty}
       </View>
     );
   }
@@ -69,6 +88,10 @@ export function PriceListHeader() {
 }
 
 const styles = StyleSheet.create({
+  nativeCell: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, minHeight: 64 },
+  cellName: { ...type.regular, fontSize: 17, lineHeight: 22, color: colors.text },
+  cellOffer: { ...type.semibold, fontSize: 15, color: colors.green, fontVariant: ['tabular-nums'] },
+  cellAmount: { ...type.medium, fontSize: 14, color: colors.gold, fontVariant: ['tabular-nums'] },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -89,9 +112,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     gap: 12,
   },
-  headCell: { color: colors.onPrimary, fontFamily: fonts.textBold, fontSize: 14 },
+  headCell: { color: colors.onPrimary, ...type.semibold, fontSize: 14 },
   center: { textAlign: 'center' },
-  cell: { fontFamily: fonts.text, fontSize: 15, color: colors.text, fontVariant: ['tabular-nums'] },
+  cell: { ...type.regular, fontSize: 15, color: colors.text, fontVariant: ['tabular-nums'] },
   colCode: { width: 44 },
   colName: { flex: 1 },
   colMrp: { width: 96, textAlign: 'right' },
@@ -99,13 +122,13 @@ const styles = StyleSheet.create({
   colOffer: { width: 100, textAlign: 'right' },
   colQty: { width: 132, alignItems: 'center' },
   colAmount: { width: 108, textAlign: 'right' },
-  code: { width: 30, fontFamily: fonts.text, fontSize: 13, color: colors.muted, fontVariant: ['tabular-nums'] },
+  code: { width: 30, ...type.regular, fontSize: 13, color: colors.muted, fontVariant: ['tabular-nums'] },
   info: { flex: 1, gap: 3 },
-  name: { fontFamily: fonts.textSemi, fontSize: 16, color: colors.text },
+  name: { ...type.medium, fontSize: 16, color: colors.text },
   prices: { flexDirection: 'row', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' },
-  mrp: { fontFamily: fonts.text, fontSize: 13, color: colors.muted, textDecorationLine: 'line-through' },
-  offer: { fontFamily: fonts.textBold, fontSize: 16, color: colors.green },
-  unit: { fontFamily: fonts.text, fontSize: 13, color: colors.muted },
+  mrp: { ...type.regular, fontSize: 13, color: colors.muted, textDecorationLine: 'line-through' },
+  offer: { ...type.semibold, fontSize: 16, color: colors.green },
+  unit: { ...type.regular, fontSize: 13, color: colors.muted },
   right: { alignItems: 'flex-end', gap: 4 },
-  amount: { fontFamily: fonts.textBold, fontSize: 14, color: colors.text, fontVariant: ['tabular-nums'] },
+  amount: { ...type.semibold, fontSize: 14, color: colors.text, fontVariant: ['tabular-nums'] },
 });

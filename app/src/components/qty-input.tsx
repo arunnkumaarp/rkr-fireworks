@@ -3,7 +3,9 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { MAX_QTY } from '@/store/cart';
 
-import { colors, fonts } from './theme';
+import { haptic } from './native';
+
+import { colors, type } from './theme';
 import { PressScale } from './press-scale';
 
 type Props = { value: number; onChange: (qty: number) => void; label: string };
@@ -23,7 +25,10 @@ export function QtyInput({ value, onChange, label }: Props) {
         scaleTo={0.9}
         accessibilityRole="button"
         accessibilityLabel={`Add ${label}`}
-        onPress={() => onChange(1)}
+        onPress={() => {
+          haptic.tap();
+          onChange(1);
+        }}
         style={styles.add}>
         <Text style={styles.addText}>Add</Text>
       </PressScale>
@@ -36,7 +41,11 @@ export function QtyInput({ value, onChange, label }: Props) {
         scaleTo={0.8}
         accessibilityRole="button"
         accessibilityLabel={`Decrease ${label}`}
-        onPress={() => onChange(value - 1)}
+        hitSlop={6}
+        onPress={() => {
+          haptic.select();
+          onChange(value - 1);
+        }}
         style={styles.btn}>
         <Text style={styles.btnText}>−</Text>
       </PressScale>
@@ -55,7 +64,11 @@ export function QtyInput({ value, onChange, label }: Props) {
         scaleTo={0.8}
         accessibilityRole="button"
         accessibilityLabel={`Increase ${label}`}
-        onPress={() => onChange(value + 1)}
+        hitSlop={6}
+        onPress={() => {
+          haptic.select();
+          onChange(value + 1);
+        }}
         style={styles.btn}>
         <Text style={styles.btnText}>+</Text>
       </PressScale>
@@ -68,11 +81,11 @@ const styles = StyleSheet.create({
     width: 112,
     height: 40,
     borderRadius: 999,
-    backgroundColor: colors.sectionBg,
+    backgroundColor: '#3A2E14',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addText: { fontFamily: fonts.textBold, fontSize: 16, color: colors.gold },
+  addText: { ...type.semibold, fontSize: 16, color: colors.gold },
   row: {
     width: 112,
     height: 40,
@@ -84,13 +97,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   btn: { width: 36, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  btnText: { fontFamily: fonts.textBold, fontSize: 20, lineHeight: 22, color: colors.onPrimary },
+  btnText: { ...type.semibold, fontSize: 20, lineHeight: 22, color: colors.onPrimary },
   input: {
     width: 36,
     minWidth: 0,
     height: 36,
     textAlign: 'center',
-    fontFamily: fonts.textBold,
+    ...type.semibold,
     fontSize: 16,
     color: colors.onPrimary,
     padding: 0,

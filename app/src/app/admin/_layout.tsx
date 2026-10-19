@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { Redirect, router, Slot, usePathname } from 'expo-router';
+import { NativeTabs } from 'expo-router/native-tabs';
 import { useState } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { admin as tone, TONES, useLayout } from '@/components/admin/ui';
-import { colors, fonts } from '@/components/theme';
+import { isNative } from '@/components/native';
+import { colors, fonts, type } from '@/components/theme';
 import { admin } from '@/lib/admin-api';
 import { useAuth } from '@/store/auth';
 
@@ -58,7 +60,59 @@ function isActive(path: string, href: string) {
   return href === '/admin' ? path === '/admin' : path === href || path.startsWith(`${href}/`);
 }
 
+// Phones open on the dashboard tab.
+export const unstable_settings = { anchor: '(today)' };
+
 export default function AdminLayout() {
+  return isNative ? <AdminTabs /> : <WebAdminShell />;
+}
+
+/** Phones: four native tabs, each with its own stack. Money and settings live under More. */
+function AdminTabs() {
+  const user = useAuth((s) => s.user);
+  const allowed = user?.role === 'admin' || user?.role === 'staff';
+  const alerts = useQuery({ queryKey: ['admin', 'notifications'], queryFn: admin.notifications, enabled: allowed, refetchInterval: 60_000 });
+  const dash = useQuery({ queryKey: ['admin', 'dashboard'], queryFn: admin.dashboard, enabled: allowed, refetchInterval: 60_000 });
+  if (!user) return <Redirect href={{ pathname: '/login', params: { next: '/admin' } }} />;
+  if (!allowed) return <Redirect href="/" />;
+  const unread = alerts.data?.unread ?? 0;
+  const fresh = dash.data?.awaiting_call ?? 0;
+
+  return (
+    <NativeTabs
+      tintColor={colors.gold}
+      iconColor={colors.muted}
+      indicatorColor="#3A2E14"
+      rippleColor="rgba(242,181,68,0.16)"
+      labelVisibilityMode="labeled"
+      badgeBackgroundColor={colors.gold}
+      badgeTextColor={colors.onPrimary}
+      backgroundColor={colors.background}
+      labelStyle={{ color: colors.muted }} disableTransparentOnScrollEdge>
+      <NativeTabs.Trigger name="(today)">
+        <NativeTabs.Trigger.Icon sf={{ default: 'square.grid.2x2', selected: 'square.grid.2x2.fill' }} md="dashboard" />
+        <NativeTabs.Trigger.Label>Today</NativeTabs.Trigger.Label>
+        {unread > 0 ? <NativeTabs.Trigger.Badge>{unread > 99 ? '99+' : String(unread)}</NativeTabs.Trigger.Badge> : null}
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="(sales)">
+        <NativeTabs.Trigger.Icon sf={{ default: 'list.bullet.rectangle', selected: 'list.bullet.rectangle.fill' }} md="receipt_long" />
+        <NativeTabs.Trigger.Label>Orders</NativeTabs.Trigger.Label>
+        {fresh > 0 ? <NativeTabs.Trigger.Badge>{String(fresh)}</NativeTabs.Trigger.Badge> : null}
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="(catalogue)">
+        <NativeTabs.Trigger.Icon sf={{ default: 'tag', selected: 'tag.fill' }} md="sell" />
+        <NativeTabs.Trigger.Label>Products</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="(more)">
+        <NativeTabs.Trigger.Icon sf={{ default: 'ellipsis.circle', selected: 'ellipsis.circle.fill' }} md="more_horiz" />
+        <NativeTabs.Trigger.Label>More</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
+  );
+}
+
+/** The website's admin: a sidebar on wide screens, a menu bar on narrow ones. */
+function WebAdminShell() {
   const user = useAuth((s) => s.user);
   const path = usePathname();
   const { wide } = useLayout();
@@ -164,29 +218,29 @@ const styles = StyleSheet.create({
   shellNarrow: { flexDirection: 'column' },
   sidebar: { width: 256, backgroundColor: tone.well, paddingTop: 28 },
   brand: { color: tone.ink, fontFamily: fonts.display, fontSize: 30, paddingHorizontal: 24, letterSpacing: -0.5 },
-  brandSub: { color: tone.gold, fontFamily: fonts.textSemi, fontSize: 15, paddingHorizontal: 24, marginTop: 2, marginBottom: 12 },
+  brandSub: { color: tone.gold, ...type.medium, fontSize: 15, paddingHorizontal: 24, marginTop: 2, marginBottom: 12 },
   nav: { paddingHorizontal: 12, paddingBottom: 24, gap: 18 },
   group: { gap: 2 },
-  groupName: { color: tone.muted, fontFamily: fonts.textSemi, fontSize: 14, paddingHorizontal: 12, paddingVertical: 6 },
+  groupName: { color: tone.muted, ...type.medium, fontSize: 14, paddingHorizontal: 12, paddingVertical: 6 },
   link: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
   linkHover: { backgroundColor: tone.panel },
   linkOn: { backgroundColor: tone.raised },
-  linkText: { color: tone.soft, fontFamily: fonts.textSemi, fontSize: 16 },
+  linkText: { color: tone.soft, ...type.medium, fontSize: 16 },
   linkTextOn: { color: tone.ink },
   badge: { minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 6, backgroundColor: tone.gold, alignItems: 'center', justifyContent: 'center' },
   badgeOn: { backgroundColor: tone.gold },
-  badgeText: { color: colors.onPrimary, fontFamily: fonts.textBold, fontSize: 12, fontVariant: ['tabular-nums'] },
+  badgeText: { color: colors.onPrimary, ...type.semibold, fontSize: 12, fontVariant: ['tabular-nums'] },
   footer: { gap: 8, paddingHorizontal: 12, paddingTop: 8 },
   footLink: { paddingVertical: 6 },
-  footText: { color: tone.gold, fontFamily: fonts.textSemi, fontSize: 15 },
-  who: { color: tone.muted, fontFamily: fonts.text, fontSize: 13 },
+  footText: { color: tone.gold, ...type.medium, fontSize: 15 },
+  who: { color: tone.muted, ...type.regular, fontSize: 13 },
   main: { flex: 1 },
   bar: { height: 56, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, backgroundColor: tone.well },
   menuBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 56 },
-  menuText: { color: tone.ink, fontFamily: fonts.textBold, fontSize: 15 },
+  menuText: { color: tone.ink, ...type.semibold, fontSize: 15 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: TONES.gold.fg },
   barTitle: { flex: 1, textAlign: 'center', color: tone.ink, fontFamily: fonts.display, fontSize: 22 },
   bell: { flexDirection: 'row', alignItems: 'center', gap: 6, minWidth: 56, justifyContent: 'flex-end' },
-  bellText: { color: tone.soft, fontFamily: fonts.textSemi, fontSize: 15 },
+  bellText: { color: tone.soft, ...type.medium, fontSize: 15 },
   overlay: { ...StyleSheet.absoluteFill, backgroundColor: tone.well, paddingTop: 12 },
 });

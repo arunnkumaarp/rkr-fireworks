@@ -1,6 +1,6 @@
 import { ActivityIndicator, StyleSheet, Text, type ViewStyle } from 'react-native';
 
-import { colors, fonts } from './theme';
+import { colors, type } from './theme';
 import { PressScale } from './press-scale';
 
 type Props = {
@@ -42,6 +42,6 @@ const styles = StyleSheet.create({
   secondary: { backgroundColor: colors.sectionBg },
   whatsapp: { backgroundColor: '#1F9D55' },
   disabled: { opacity: 0.5 },
-  text: { color: colors.onPrimary, fontFamily: fonts.textBold, fontSize: 16 },
+  text: { color: colors.onPrimary, ...type.semibold, fontSize: 16 },
   textSecondary: { color: colors.text },
 });

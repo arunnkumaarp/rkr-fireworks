@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Line, Path, Text as SvgText } from 'react-native-svg';
 
-import { fonts } from '@/components/theme';
+import { fonts, type } from '@/components/theme';
 import { formatRupees, formatRupeesShort } from '@/lib/format';
 
 import { admin } from './ui';
@@ -92,7 +92,7 @@ export function BarChart({ data, series, height = 220, title }: { data: Bar[]; s
               });
             })}
             {data.map((d, i) =>
-              i % labelEvery === 0 || i === data.length - 1 ? (
+              (i % labelEvery === 0 && data.length - 1 - i >= labelEvery * 0.8) || i === data.length - 1 ? (
                 <SvgText
                   key={`x${i}`}
                   x={i === data.length - 1 ? width : AXIS_W + i * slot + slot / 2}
@@ -128,12 +128,12 @@ export function BarChart({ data, series, height = 220, title }: { data: Bar[]; s
 const styles = StyleSheet.create({
   wrap: { gap: 14 },
   readout: { gap: 6 },
-  readoutDate: { color: admin.soft, fontFamily: fonts.textSemi, fontSize: 14 },
+  readoutDate: { color: admin.soft, ...type.medium, fontSize: 14 },
   readoutValues: { flexDirection: 'row', flexWrap: 'wrap', gap: 18 },
   key: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   swatch: { width: 12, height: 12, borderRadius: 3 },
-  keyText: { color: admin.soft, fontFamily: fonts.text, fontSize: 15 },
-  keyValue: { color: admin.ink, fontFamily: fonts.textBold, fontVariant: ['tabular-nums'] },
+  keyText: { color: admin.soft, ...type.regular, fontSize: 15 },
+  keyValue: { color: admin.ink, ...type.semibold, fontVariant: ['tabular-nums'] },
   hits: { flexDirection: 'row' },
   hit: { flex: 1 },
 });

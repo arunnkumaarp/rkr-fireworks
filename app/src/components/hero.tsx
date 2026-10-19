@@ -3,7 +3,7 @@ import { Linking, Pressable, StyleSheet, Text, useWindowDimensions, View } from 
 
 import type { ShopSettings } from '@/lib/api';
 
-import { colors, fonts, MAX_CONTENT_WIDTH, WIDE_BREAKPOINT } from './theme';
+import { colors, fonts, MAX_CONTENT_WIDTH, WIDE_BREAKPOINT, type } from './theme';
 
 export function formatPhone(p: string) {
   const d = p.replace(/\D/g, '');
@@ -70,10 +70,54 @@ const styles = StyleSheet.create({
   textWide: { flex: 1.1 },
   brand: { fontFamily: fonts.display, fontSize: 26, color: colors.gold },
   headline: { fontFamily: fonts.display, color: colors.text, letterSpacing: -0.5 },
-  statement: { fontFamily: fonts.text, fontSize: 18, lineHeight: 26, color: colors.text, maxWidth: 460 },
-  small: { fontFamily: fonts.text, fontSize: 15, color: colors.text },
+  statement: { ...type.regular, fontSize: 18, lineHeight: 26, color: colors.text, maxWidth: 460 },
+  small: { ...type.regular, fontSize: 15, color: colors.text },
   phones: { flexDirection: 'row', flexWrap: 'wrap', gap: 20 },
   phone: { fontFamily: fonts.display, fontSize: 30, color: colors.primary, fontVariant: ['tabular-nums'] },
   art: { width: '100%', borderRadius: 12 },
   artWide: { flex: 1, aspectRatio: 1, maxHeight: 520 },
+});
+
+/** The apps' compact offer: one photograph, the offer in the brand face, and a call action. */
+export function PromoCard({ shop }: { shop?: ShopSettings }) {
+  const minOrder = shop ? Number(shop.min_order_value).toLocaleString('en-IN') : null;
+  const phone = shop?.phone_primary;
+  return (
+    <View style={promo.card}>
+      <Image
+        source={require('@/assets/images/hero-night.jpg')}
+        style={promo.photo}
+        contentFit="cover"
+        contentPosition={{ top: "35%" }}
+        accessibilityLabel="A large flowerpot cracker throwing golden sparks at night"
+      />
+      <View style={promo.body}>
+        <Text style={promo.title} accessibilityRole="header">
+          Every cracker, 80% off.
+        </Text>
+        <Text style={promo.text}>
+          Pick quantities and send an estimate. We call to confirm{minOrder ? `; minimum order ₹${minOrder}` : ''}. No payment
+          until then.
+        </Text>
+        {phone ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => Linking.openURL(`tel:${phone}`)}
+            style={({ pressed }) => [promo.call, pressed && { opacity: 0.75 }]}>
+            <Text style={promo.callText}>Call {formatPhone(phone)}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+const promo = StyleSheet.create({
+  card: { backgroundColor: '#1C1A18', borderRadius: 20, overflow: 'hidden' },
+  photo: { width: '100%', aspectRatio: 16 / 9 },
+  body: { padding: 18, gap: 10 },
+  title: { fontFamily: fonts.display, fontSize: 32, lineHeight: 34, color: colors.text, letterSpacing: -0.5 },
+  text: { ...type.regular, fontSize: 15, lineHeight: 21, color: '#C9C2BA' },
+  call: { alignSelf: 'flex-start', backgroundColor: '#3A2E14', borderRadius: 20, paddingHorizontal: 16, height: 40, justifyContent: 'center', marginTop: 4 },
+  callText: { ...type.semibold, fontSize: 15, color: colors.gold, fontVariant: ['tabular-nums'] },
 });

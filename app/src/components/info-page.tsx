@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { colors, fonts } from './theme';
+import { colors, fonts, type } from './theme';
 
 export type InfoSection = { heading: string; body: string[] };
 
@@ -30,8 +30,8 @@ export function InfoPage({ title, intro, sections }: { title: string; intro: str
 const styles = StyleSheet.create({
   container: { padding: 20, paddingBottom: 64, gap: 28, width: '100%', maxWidth: 720, alignSelf: 'center' },
   title: { fontFamily: fonts.display, fontSize: 48, lineHeight: 50, color: colors.text },
-  intro: { fontFamily: fonts.text, fontSize: 20, lineHeight: 29, color: colors.text },
+  intro: { ...type.regular, fontSize: 20, lineHeight: 29, color: colors.text },
   section: { gap: 10 },
-  heading: { fontFamily: fonts.textBold, fontSize: 20, color: colors.primary },
-  body: { fontFamily: fonts.text, fontSize: 17, lineHeight: 26, color: colors.text },
+  heading: { ...type.semibold, fontSize: 20, color: colors.primary },
+  body: { ...type.regular, fontSize: 17, lineHeight: 26, color: colors.text },
 });

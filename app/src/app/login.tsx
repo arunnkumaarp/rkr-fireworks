@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput } from 'react-native';
 
 import { Button } from '@/components/button';
-import { colors, fonts } from '@/components/theme';
+import { haptic, isNative } from '@/components/native';
+import { colors, fonts, type } from '@/components/theme';
 import { api } from '@/lib/api';
 import { useAuth } from '@/store/auth';
 
@@ -24,8 +25,16 @@ export default function LoginScreen() {
       signIn(data);
       // Only same-app paths, so a crafted link can't send people elsewhere.
       // The shop's own team lands in the admin; customers on their orders.
-      const home = data.user.role === 'customer' ? '/orders' : '/admin';
-      router.replace(next?.startsWith('/') ? (next as never) : home);
+      // "My orders" is only where the header's Log in link starts, so it doesn't override that.
+      const target = next?.startsWith('/') && next !== '/orders' ? next : data.user.role === 'customer' ? null : '/admin';
+      if (isNative) {
+        // On phones login is a sheet: close it and carry on where the customer was.
+        haptic.success();
+        router.back();
+        if (target) router.push(target as never);
+        return;
+      }
+      router.replace((target ?? '/orders') as never);
     },
   });
 
@@ -99,9 +108,9 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: { padding: 20, gap: 14, width: '100%', maxWidth: 480, alignSelf: 'center' },
+  container: { padding: 24, paddingTop: isNative ? 36 : 20, gap: 14, width: '100%', maxWidth: 480, alignSelf: 'center' },
   title: { fontFamily: fonts.display, fontSize: 28, color: colors.text, letterSpacing: -0.5 },
-  body: { fontFamily: fonts.text, fontSize: 16, color: colors.text, lineHeight: 23 },
+  body: { ...type.regular, fontSize: 16, color: colors.text, lineHeight: 23 },
   input: {
     height: 52,
     borderRadius: 10,
@@ -109,9 +118,9 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.surface,
     paddingHorizontal: 14,
-    fontFamily: fonts.text, fontSize: 17,
+    ...type.regular, fontSize: 17,
     color: colors.text,
   },
-  codeInput: { fontFamily: fonts.text, fontSize: 26, letterSpacing: 8, textAlign: 'center', fontVariant: ['tabular-nums'] },
-  error: { color: colors.danger, fontFamily: fonts.textSemi },
+  codeInput: { ...type.regular, fontSize: 26, letterSpacing: 8, textAlign: 'center', fontVariant: ['tabular-nums'] },
+  error: { color: colors.danger, ...type.medium },
 });

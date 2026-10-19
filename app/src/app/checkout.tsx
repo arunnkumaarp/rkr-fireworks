@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
-import { colors, MAX_CONTENT_WIDTH, fonts } from '@/components/theme';
+import { colors, MAX_CONTENT_WIDTH, type } from '@/components/theme';
 import { api, ApiError, type EstimateInput } from '@/lib/api';
 import { formatRupees } from '@/lib/format';
 import { useShopSettings } from '@/lib/queries';
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   container: { padding: 16, gap: 14, width: '100%', maxWidth: 640, alignSelf: 'center' },
   row: { flexDirection: 'row', gap: 12 },
   field: { gap: 6 },
-  label: { fontFamily: fonts.textSemi, fontSize: 14, color: colors.text },
+  label: { ...type.medium, fontSize: 14, color: colors.text },
   input: {
     minHeight: 46,
     borderRadius: 10,
@@ -176,12 +176,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    fontFamily: fonts.text, fontSize: 16,
+    ...type.regular, fontSize: 16,
     color: colors.text,
   },
   multiline: { minHeight: 80, textAlignVertical: 'top' },
   inputError: { borderColor: colors.danger },
-  error: { color: colors.danger, fontFamily: fonts.text, fontSize: 13 },
+  error: { color: colors.danger, ...type.regular, fontSize: 13 },
   summary: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -191,11 +191,11 @@ const styles = StyleSheet.create({
     padding: 14,
     marginTop: 6,
   },
-  summaryText: { color: colors.text, fontFamily: fonts.text, fontSize: 14 },
-  summaryTotal: { color: colors.text, fontFamily: fonts.textBold, fontSize: 20, },
-  note: { fontFamily: fonts.text, fontSize: 13, color: colors.muted, lineHeight: 19 },
-  serverError: { color: colors.danger, fontFamily: fonts.textSemi },
-  applied: { color: colors.green, fontFamily: fonts.textSemi, fontSize: 14 },
+  summaryText: { color: colors.text, ...type.regular, fontSize: 14 },
+  summaryTotal: { color: colors.text, ...type.semibold, fontSize: 20, },
+  note: { ...type.regular, fontSize: 13, color: colors.muted, lineHeight: 19 },
+  serverError: { color: colors.danger, ...type.medium },
+  applied: { color: colors.green, ...type.medium, fontSize: 14 },
 });
 
 void MAX_CONTENT_WIDTH;
