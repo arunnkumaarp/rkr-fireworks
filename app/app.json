@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "RKR Crackers",
+    "slug": "rkr-crackers",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "rkrcrackers",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "icon": "./assets/images/icon.png",
+      "bundleIdentifier": "com.rkrfireworks.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0F0D0C",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.rkrfireworks.app"
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png",
+      "name": "RKR Crackers \u2013 2026 Price List",
+      "description": "Every item at 80% off MRP. Fill in your quantities and send an estimate; we call to confirm.",
+      "themeColor": "#0F0D0C"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0F0D0C",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true,
+      "baseUrl": "/shop"
+    }
+  }
+}

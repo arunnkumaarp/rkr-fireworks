@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+.venv/
+media/
+node_modules/
+.expo/
+dist/
+.DS_Store
+.taste-skill/
