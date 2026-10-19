@@ -39,6 +39,8 @@ export default function CheckoutScreen() {
     phone: user?.phone ?? '',
   }));
   const [touched, setTouched] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [coupon, setCoupon] = useState<{ code: string; discount: string; description: string } | null>(null);
 
   // Returning customers: start from the details of their last estimate.
   const last = useQuery({ queryKey: ['my-estimates', user?.id], queryFn: api.myEstimates, enabled: !!user });
@@ -68,6 +70,11 @@ export default function CheckoutScreen() {
   });
 
   const totals = cartTotals(lines, Number(shop?.packing_charge_percent ?? 0));
+  const checkCoupon = useMutation({
+    mutationFn: () => api.checkCoupon(couponCode.trim(), totals.subtotal),
+    onSuccess: setCoupon,
+    onError: () => setCoupon(null),
+  });
   if (!user) return <Redirect href={{ pathname: '/login', params: { next: '/checkout' } }} />;
   if (totals.products === 0 && !submit.isSuccess) return <Redirect href="/cart" />;
 
@@ -94,6 +101,7 @@ export default function CheckoutScreen() {
     submit.mutate({
       ...form,
       lines: Object.values(lines).map((l) => ({ product: l.product.id, quantity: l.quantity })),
+      ...(coupon ? { coupon: coupon.code } : {}),
     });
   };
 
@@ -113,9 +121,35 @@ export default function CheckoutScreen() {
         {field('state', 'State', { autoComplete: 'postal-address-region' })}
         {field('notes', 'Notes (optional)', { multiline: true, placeholder: 'Nearest transport office, preferred call time…' })}
 
+        <View style={styles.field}>
+          <Text style={styles.label}>Coupon code (optional)</Text>
+          <View style={styles.row}>
+            <TextInput
+              value={couponCode}
+              onChangeText={(t) => {
+                setCouponCode(t.toUpperCase());
+                setCoupon(null);
+              }}
+              autoCapitalize="characters"
+              style={[styles.input, styles.flex]}
+              placeholderTextColor={colors.muted}
+              accessibilityLabel="Coupon code"
+            />
+            <Button title="Apply" variant="secondary" onPress={() => checkCoupon.mutate()} loading={checkCoupon.isPending} disabled={!couponCode.trim()} />
+          </View>
+          {coupon ? (
+            <Text style={styles.applied}>
+              {coupon.code} applied: you save {formatRupees(coupon.discount)}
+              {coupon.description ? ` · ${coupon.description}` : ''}
+            </Text>
+          ) : checkCoupon.error ? (
+            <Text style={styles.error}>{checkCoupon.error.message}</Text>
+          ) : null}
+        </View>
+
         <View style={styles.summary}>
           <Text style={styles.summaryText}>{totals.products} products · {totals.count} items</Text>
-          <Text style={styles.summaryTotal}>{formatRupees(totals.total)}</Text>
+          <Text style={styles.summaryTotal}>{formatRupees(totals.total - Number(coupon?.discount ?? 0))}</Text>
         </View>
         <Text style={styles.note}>
           No payment now. After you submit, we’ll call you to confirm the order and share payment details.
@@ -161,6 +195,7 @@ const styles = StyleSheet.create({
   summaryTotal: { color: colors.text, fontFamily: fonts.textBold, fontSize: 20, },
   note: { fontFamily: fonts.text, fontSize: 13, color: colors.muted, lineHeight: 19 },
   serverError: { color: colors.danger, fontFamily: fonts.textSemi },
+  applied: { color: colors.green, fontFamily: fonts.textSemi, fontSize: 14 },
 });
 
 void MAX_CONTENT_WIDTH;

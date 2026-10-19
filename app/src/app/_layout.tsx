@@ -80,7 +80,7 @@ function Wordmark() {
 
 function AccountLink() {
   const user = useAuth((s) => s.user);
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'staff';
   return (
     <Link href={isAdmin ? '/admin' : '/orders'} style={{ color: colors.gold, fontFamily: fonts.textSemi, fontSize: 15, paddingHorizontal: 12 }}>
       {isAdmin ? 'Shop admin' : user ? 'My orders' : 'Log in'}

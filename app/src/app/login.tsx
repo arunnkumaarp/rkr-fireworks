@@ -23,7 +23,9 @@ export default function LoginScreen() {
     onSuccess: (data) => {
       signIn(data);
       // Only same-app paths, so a crafted link can't send people elsewhere.
-      router.replace(next?.startsWith('/') ? (next as never) : '/orders');
+      // The shop's own team lands in the admin; customers on their orders.
+      const home = data.user.role === 'customer' ? '/orders' : '/admin';
+      router.replace(next?.startsWith('/') ? (next as never) : home);
     },
   });
 

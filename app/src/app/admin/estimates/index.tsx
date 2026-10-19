@@ -1,108 +1,77 @@
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-import { colors, fonts } from '@/components/theme';
-import { api } from '@/lib/api';
-import { formatRupees } from '@/lib/format';
-import { ADMIN_STATUS_LABEL, STATUSES } from '@/lib/status';
-import { PressScale } from '@/components/press-scale';
+import { Chips, ErrorText, Field, Page, Pill, SearchBox, Table, useLayout } from '@/components/admin/ui';
+import { admin } from '@/lib/admin-api';
+import { formatDateTime, formatRupees } from '@/lib/format';
+import { ADMIN_STATUS_LABEL, PAYMENT_LABEL, PAYMENT_TONE, STAGES, STATUS_TONE } from '@/lib/status';
+import { useDebounced } from '@/lib/use-debounced';
 
-export default function AdminEstimates() {
-  const params = useLocalSearchParams<{ status?: string }>();
-  const [status, setStatus] = useState(params.status ?? '');
+const PAYMENTS = [
+  { value: '', label: 'Any payment' },
+  { value: 'unpaid', label: 'Unpaid' },
+  { value: 'partial', label: 'Part paid' },
+  { value: 'paid', label: 'Paid' },
+  { value: 'refund_due', label: 'Refund due' },
+];
+
+export default function AdminOrders() {
+  const params = useLocalSearchParams<{ stage?: string; status?: string }>();
+  // Old links used ?status=submitted.
+  const [stage, setStage] = useState(params.stage ?? (params.status === 'submitted' ? 'new' : 'open'));
+  const [payment, setPayment] = useState('');
   const [search, setSearch] = useState('');
-  const list = useQuery({
-    queryKey: ['admin', 'estimates', status, search.trim()],
-    queryFn: () => api.admin.estimates({ status, search: search.trim() }),
-  });
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const { medium } = useLayout();
+  const q = useDebounced(search.trim(), 250);
+  const validDate = (d: string) => (/^\d{4}-\d{2}-\d{2}$/.test(d) ? d : '');
+  const filters = { stage, payment, search: q, from: validDate(from), to: validDate(to) };
+  const list = useQuery({ queryKey: ['admin', 'estimates', filters], queryFn: () => admin.estimates(filters) });
 
   return (
-    <FlatList
-      contentContainerStyle={styles.container}
-      data={list.data ?? []}
-      keyExtractor={(e) => e.number}
-      keyboardShouldPersistTaps="handled"
-      refreshControl={<RefreshControl refreshing={list.isRefetching} onRefresh={() => void list.refetch()} />}
-      ListHeaderComponent={
-        <View style={styles.header}>
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Search number, name, phone, city"
-            placeholderTextColor={colors.muted}
-            style={styles.search}
-            accessibilityLabel="Search estimates"
-          />
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-            {['', ...STATUSES].map((s) => (
-              <PressScale scaleTo={0.97}
-                key={s || 'all'}
-                accessibilityRole="button"
-                accessibilityState={{ selected: status === s }}
-                onPress={() => setStatus(s)}
-                style={[styles.chip, status === s && styles.chipActive]}>
-                <Text style={[styles.chipText, status === s && styles.chipTextActive]}>
-                  {s ? ADMIN_STATUS_LABEL[s] : 'All'}
-                </Text>
-              </PressScale>
-            ))}
-          </ScrollView>
-        </View>
-      }
-      ListEmptyComponent={
-        <Text style={styles.empty}>
-          {list.isPending ? 'Loading…' : list.isError ? `Could not load: ${list.error.message}` : 'No estimates here.'}
-        </Text>
-      }
-      renderItem={({ item }) => (
-        <PressScale scaleTo={0.97}
-          accessibilityRole="button"
-          onPress={() => router.push({ pathname: '/admin/estimates/[number]', params: { number: item.number } })}
-          style={styles.card}>
-          <View style={styles.cardTop}>
-            <Text style={styles.number}>{item.number}</Text>
-            <Text style={styles.total}>{formatRupees(item.total)}</Text>
+    <Page
+      title="Orders"
+      lead="Every estimate customers send. Open one to call, confirm, edit items, take payment and dispatch."
+      refreshing={list.isRefetching}
+      onRefresh={() => void list.refetch()}>
+      <View style={styles.filters}>
+        <Chips options={STAGES} value={stage} onChange={setStage} />
+        <View style={[styles.row, medium && styles.rowWide]}>
+          <SearchBox value={search} onChange={setSearch} placeholder="Search number, name, phone, city, LR" />
+          <View style={styles.dates}>
+            <Field label="From" value={from} onChangeText={setFrom} placeholder="2026-10-01" style={styles.date} />
+            <Field label="To" value={to} onChangeText={setTo} placeholder="2026-10-31" style={styles.date} />
           </View>
-          <Text style={styles.name}>
-            {item.customer_name} · {item.city}
-          </Text>
-          <Text style={[styles.status, item.status === 'submitted' && styles.statusNew]}>
-            {ADMIN_STATUS_LABEL[item.status] ?? item.status} ·{' '}
-            {new Date(item.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}
-          </Text>
-        </PressScale>
-      )}
-    />
+        </View>
+        <Chips options={PAYMENTS} value={payment} onChange={setPayment} />
+      </View>
+      <ErrorText error={list.error} />
+      <Table
+        rows={list.data}
+        loading={list.isPending}
+        keyOf={(e) => e.number}
+        onRowPress={(e) => router.push({ pathname: '/admin/estimates/[number]', params: { number: e.number } })}
+        empty="No orders match these filters."
+        columns={[
+          { key: 'n', label: 'Order', render: (e) => e.number },
+          { key: 'c', label: 'Customer', flex: 1.6, render: (e) => `${e.customer_name}, ${e.city}` },
+          { key: 'p', label: 'Placed', flex: 1.2, render: (e) => formatDateTime(e.created_at), hideOnPhone: true },
+          { key: 's', label: 'Status', render: (e) => <Pill label={ADMIN_STATUS_LABEL[e.status]} tone={STATUS_TONE[e.status]} /> },
+          { key: 'pay', label: 'Payment', render: (e) => <Pill label={PAYMENT_LABEL[e.payment_status]} tone={PAYMENT_TONE[e.payment_status]} /> },
+          { key: 't', label: 'Total', align: 'right', render: (e) => formatRupees(e.total) },
+        ]}
+      />
+    </Page>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 10, width: '100%', maxWidth: 720, alignSelf: 'center' },
-  header: { gap: 10, marginBottom: 4 },
-  search: {
-    height: 44,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 12,
-    fontFamily: fonts.text, fontSize: 16,
-    color: colors.text,
-    backgroundColor: colors.surface,
-  },
-  chips: { gap: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: colors.surfaceAlt },
-  chipActive: { backgroundColor: colors.purple },
-  chipText: { fontFamily: fonts.textSemi, fontSize: 14, color: colors.text },
-  chipTextActive: { color: colors.text },
-  empty: { padding: 24, textAlign: 'center', color: colors.muted, fontFamily: fonts.text, fontSize: 15 },
-  card: { backgroundColor: colors.surfaceAlt, borderRadius: 14, padding: 14, gap: 3 },
-  pressed: { opacity: 0.8 },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between' },
-  number: { fontFamily: fonts.textBold, fontSize: 17, color: colors.text },
-  total: { fontFamily: fonts.textBold, fontSize: 17, color: colors.text, fontVariant: ['tabular-nums'] },
-  name: { fontFamily: fonts.text, fontSize: 15, color: colors.text },
-  status: { fontFamily: fonts.text, fontSize: 14, color: colors.muted },
-  statusNew: { color: colors.primary, fontFamily: fonts.textBold },
+  filters: { gap: 14 },
+  row: { gap: 12 },
+  rowWide: { flexDirection: 'row', alignItems: 'flex-end' },
+  dates: { flexDirection: 'row', gap: 12 },
+  date: { flexBasis: 140, flexGrow: 0, minWidth: 130 },
 });

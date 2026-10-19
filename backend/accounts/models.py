@@ -10,14 +10,23 @@ from django.utils.crypto import constant_time_compare, salted_hmac
 class User(AbstractUser):
     class Role(models.TextChoices):
         CUSTOMER = "customer", "Customer"
+        STAFF = "staff", "Staff"
         ADMIN = "admin", "Admin"
 
     phone = models.CharField(max_length=15, blank=True, default="")
     role = models.CharField(max_length=10, choices=Role.choices, default=Role.CUSTOMER)
+    # When this admin last opened their notifications; newer alerts count as unread.
+    notifications_seen_at = models.DateTimeField(null=True, blank=True)
 
     @property
     def is_shop_admin(self):
+        """Full access: money, reports, offers, settings and team."""
         return self.role == self.Role.ADMIN or self.is_superuser
+
+    @property
+    def is_shop_staff(self):
+        """Day-to-day access: orders, dispatch, products, stock and customers."""
+        return self.role == self.Role.STAFF or self.is_shop_admin
 
 
 class EmailOTP(models.Model):

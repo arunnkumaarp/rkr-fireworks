@@ -74,6 +74,12 @@ def verify_otp(request):
         User.objects.create(username=email, email=email)
     if not user.is_active:
         return Response({"detail": "Account disabled."}, status=status.HTTP_403_FORBIDDEN)
+    user.last_login = timezone.now()
+    user.save(update_fields=["last_login"])
+    if user.is_shop_staff:
+        from backoffice.audit import record
+        request.user = user
+        record(request, "login", "user", user.pk, f"{user.email} logged in to the shop admin")
     refresh = RefreshToken.for_user(user)
     return Response({"access": str(refresh.access_token), "refresh": str(refresh),
                      "user": UserSerializer(user).data})

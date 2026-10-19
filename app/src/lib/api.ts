@@ -65,10 +65,14 @@ export type Estimate = {
   mrp_total: string;
   subtotal: string;
   packing_charge: string;
+  coupon_code: string;
+  discount: string;
   total: string;
   status: string;
   transport_name: string;
   lr_number: string;
+  dispatch_date: string | null;
+  delivered_on: string | null;
   created_at: string;
 };
 
@@ -77,33 +81,13 @@ export type User = {
   email: string;
   first_name: string;
   phone: string;
-  role: 'customer' | 'admin';
+  role: 'customer' | 'staff' | 'admin';
 };
 
 export type EstimateInput = Pick<
   Estimate,
   'customer_name' | 'phone' | 'email' | 'address' | 'city' | 'state' | 'pincode' | 'notes'
-> & { lines: { product: number; quantity: number }[] };
-
-export type AdminEstimate = Omit<Estimate, 'items'> & { items: (EstimateItem & { id: number })[] };
-
-export type EstimatePatch = Partial<Pick<Estimate, 'status' | 'transport_name' | 'lr_number' | 'notes'>> & {
-  item_changes?: { id: number; quantity: number; price?: string }[];
-};
-
-export type Dashboard = {
-  today: number;
-  this_week: number;
-  awaiting_call: number;
-  to_dispatch: number;
-  confirmed_value: string | number;
-  top_products: { code: number; name: string; quantity: number }[];
-};
-
-export type AdminProduct = Pick<
-  Product,
-  'id' | 'code' | 'name' | 'category' | 'category_name' | 'mrp' | 'discount_percent' | 'offer_price' | 'unit'
-> & { is_active: boolean };
+> & { lines: { product: number; quantity: number }[]; coupon?: string };
 
 /** Validation errors from DRF, flattened into readable messages. */
 export class ApiError extends Error {
@@ -112,7 +96,7 @@ export class ApiError extends Error {
   }
 }
 
-function send(path: string, init?: RequestInit) {
+export function send(path: string, init?: RequestInit) {
   const { access } = useAuth.getState();
   return fetch(`${API_URL}${path}`, {
     ...init,
@@ -144,7 +128,7 @@ async function refreshAccess() {
   return true;
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res = await send(path, init);
   if (res.status === 401 && useAuth.getState().access) {
     // Refresh, or sign out on failure; either way retry once (public endpoints work signed out).
@@ -164,6 +148,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
     throw new ApiError(res.status, fields);
   }
+  if (res.status === 204) return undefined as T;
   return res.json();
 }
 
@@ -180,22 +165,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ email, code }),
     }),
+  checkCoupon: (code: string, subtotal: number) =>
+    request<{ code: string; description: string; discount: string }>('/coupons/check/', {
+      method: 'POST',
+      body: JSON.stringify({ code, subtotal: subtotal.toFixed(2) }),
+    }),
   myEstimates: () => request<Estimate[]>('/estimates/mine/'),
-  admin: {
-    dashboard: () => request<Dashboard>('/admin/dashboard/'),
-    estimates: (params: { status?: string; search?: string }) => {
-      const q = new URLSearchParams(Object.entries(params).filter(([, v]) => v) as [string, string][]);
-      return request<Estimate[]>(`/admin/estimates/?${q}`);
-    },
-    estimate: (number: string) => request<AdminEstimate>(`/admin/estimates/${encodeURIComponent(number)}/`),
-    updateEstimate: (number: string, patch: EstimatePatch) =>
-      request<AdminEstimate>(`/admin/estimates/${encodeURIComponent(number)}/`, {
-        method: 'PATCH',
-        body: JSON.stringify(patch),
-      }),
-    products: () => request<AdminProduct[]>('/admin/products/'),
-    updateProduct: (id: number, patch: Partial<Pick<AdminProduct, 'mrp' | 'discount_percent' | 'is_active'>>) =>
-      request<AdminProduct>(`/admin/products/${id}/`, { method: 'PATCH', body: JSON.stringify(patch) }),
-  },
   estimate: (number: string) => request<Estimate>(`/estimates/${encodeURIComponent(number)}/`),
 };

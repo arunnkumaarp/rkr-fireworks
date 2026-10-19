@@ -4,7 +4,7 @@ from rest_framework import serializers
 from catalog.models import Product
 from content.models import ShopSettings
 
-from .models import Estimate, EstimateItem
+from .models import Coupon, Estimate, EstimateItem
 
 
 class EstimateItemSerializer(serializers.ModelSerializer):
@@ -22,12 +22,13 @@ class EstimateSerializer(serializers.ModelSerializer):
         model = Estimate
         fields = [
             "number", "customer_name", "phone", "email", "address", "city", "state",
-            "pincode", "notes", "items", "mrp_total", "subtotal", "packing_charge",
-            "total", "status", "transport_name", "lr_number", "created_at",
+            "pincode", "notes", "items", "mrp_total", "subtotal", "packing_charge", "coupon_code",
+            "discount", "total", "status", "transport_name", "lr_number", "dispatch_date", "delivered_on",
+            "created_at",
         ]
         read_only_fields = [
-            "number", "email", "mrp_total", "subtotal", "packing_charge", "total", "status",
-            "transport_name", "lr_number", "created_at",
+            "number", "email", "mrp_total", "subtotal", "packing_charge", "coupon_code", "discount", "total",
+            "status", "transport_name", "lr_number", "dispatch_date", "delivered_on", "created_at",
         ]
 
 
@@ -38,9 +39,10 @@ class CartLineSerializer(serializers.Serializer):
 
 class EstimateCreateSerializer(EstimateSerializer):
     lines = CartLineSerializer(many=True, write_only=True, allow_empty=False)
+    coupon = serializers.CharField(write_only=True, required=False, allow_blank=True, max_length=30)
 
     class Meta(EstimateSerializer.Meta):
-        fields = EstimateSerializer.Meta.fields + ["lines"]
+        fields = EstimateSerializer.Meta.fields + ["lines", "coupon"]
 
     def validate_phone(self, value):
         digits = "".join(ch for ch in value if ch.isdigit())[-10:]
@@ -52,10 +54,15 @@ class EstimateCreateSerializer(EstimateSerializer):
         ids = [line["product"] for line in lines]
         if len(ids) != len(set(ids)):
             raise serializers.ValidationError("Each product can appear only once.")
-        products = Product.objects.filter(pk__in=ids, is_active=True).in_bulk()
+        products = Product.objects.filter(pk__in=ids, is_active=True, category__is_active=True).exclude(
+            stock__lte=0).in_bulk()
         missing = set(ids) - set(products)
         if missing:
             raise serializers.ValidationError(f"Products no longer available: {sorted(missing)}")
+        for line in lines:
+            p = products[line["product"]]
+            if p.stock is not None and line["quantity"] > p.stock:
+                raise serializers.ValidationError(f"Only {p.stock} of {p.name} left. Please reduce the quantity.")
         return [(products[line["product"]], line["quantity"]) for line in lines]
 
     def validate(self, attrs):
@@ -65,6 +72,14 @@ class EstimateCreateSerializer(EstimateSerializer):
             raise serializers.ValidationError(
                 {"lines": f"Minimum order value is ₹{shop.min_order_value:.0f}."})
         attrs["_shop"] = shop
+        code = attrs.pop("coupon", "").strip().upper()
+        if code:
+            coupon = Coupon.objects.filter(code=code).first()
+            problem = coupon.problem_with(subtotal) if coupon else "This coupon code is not valid."
+            if problem:
+                raise serializers.ValidationError({"coupon": problem})
+            attrs["coupon"] = coupon
+            attrs["coupon_code"] = coupon.code
         return attrs
 
     @transaction.atomic

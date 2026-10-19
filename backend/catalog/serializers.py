@@ -14,6 +14,9 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     offer_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     category_name = serializers.CharField(source="category.name", read_only=True)
+    # Includes a running seasonal offer, so the shown discount matches the offer price.
+    discount_percent = serializers.DecimalField(source="effective_discount", max_digits=5, decimal_places=2,
+                                                read_only=True)
 
     class Meta:
         model = Product

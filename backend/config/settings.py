@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "catalog",
     "content",
     "orders",
+    "backoffice",
 ]
 
 MIDDLEWARE = [
@@ -99,6 +100,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ALLOWED_ORIGINS = [
     o for o in os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:8081").split(",") if o
 ]
+
+# The admin downloads CSV reports through fetch and needs the file name.
+CORS_EXPOSE_HEADERS = ["Content-Disposition"]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [

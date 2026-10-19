@@ -10,6 +10,7 @@ urlpatterns = [
     path("api/v1/", include("catalog.urls")),
     path("api/v1/", include("content.urls")),
     path("api/v1/", include("orders.urls")),
+    path("api/v1/admin/", include("backoffice.urls")),
 ]
 
 if settings.DEBUG:

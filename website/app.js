@@ -54,7 +54,7 @@
   }
   const update = () => { render(); save(); };
 
-  rows.forEach((r) => {
+  function wire(r) {
     r.input.addEventListener('input', update);
     r.input.addEventListener('change', () => { const v = clampQty(r.input.value); r.input.value = v ? String(v) : ''; update(); });
     r.el.querySelector('[data-add]').addEventListener('click', () => {
@@ -68,14 +68,47 @@
       pulse(r.input, 'bump');
       update();
     }));
-  });
+  }
+  rows.forEach(wire);
+
+  // Products added in the shop admin after this page was built: same row markup, placed in their category.
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  function addRow(p) {
+    let group = [...document.querySelectorAll('[data-group]')].find((g) => g.querySelector('.group-name')?.textContent === p.category_name);
+    if (!group) {
+      const last = [...document.querySelectorAll('[data-group]')].pop();
+      group = document.createElement('section');
+      group.className = 'group';
+      group.dataset.group = '';
+      group.innerHTML = `<h3 class="group-name">${esc(p.category_name)}</h3><ul class="rows"></ul>`;
+      last ? last.after(group) : document.querySelector('.rows')?.parentElement?.append(group);
+    }
+    const li = document.createElement('li');
+    li.className = 'row';
+    li.dataset.code = String(p.code);
+    li.dataset.name = p.name.toLowerCase();
+    li.innerHTML = `
+      <span class="r-name">${esc(p.name)}</span>
+      <span class="r-mrp nums"><s data-mrp></s></span>
+      <span class="r-price nums"><span data-price></span> <span class="r-unit">/ ${esc(p.unit.toLowerCase())}</span></span>
+      <span class="r-qty">
+        <button type="button" class="add" data-add aria-label="Add ${esc(p.name)}">Add</button>
+        <button type="button" class="step" data-step="-1" aria-label="One less ${esc(p.name)}">−</button>
+        <input type="number" inputmode="numeric" min="0" max="999" placeholder="0" aria-label="Quantity of ${esc(p.name)}" data-qty>
+        <button type="button" class="step" data-step="1" aria-label="One more ${esc(p.name)}">+</button>
+      </span>`;
+    group.querySelector('.rows').append(li);
+    const r = { el: li, input: li.querySelector('[data-qty]'), price: li.querySelector('[data-price]'), mrp: li.querySelector('[data-mrp]') };
+    rows.set(p.code, r);
+    wire(r);
+    return r;
+  }
 
   // Live prices and product ids from the shop; the printed prices stay if the API is unreachable.
   fetch(`${API}/products/`).then((res) => (res.ok ? res.json() : Promise.reject(res.status))).then((list) => {
     const live = new Set();
     for (const p of list) {
-      const r = rows.get(p.code);
-      if (!r) continue;
+      const r = rows.get(p.code) || addRow(p);
       r.product = p;
       live.add(p.code);
       r.price.textContent = inr(Number(p.offer_price));

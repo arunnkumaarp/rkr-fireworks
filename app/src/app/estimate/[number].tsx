@@ -72,6 +72,7 @@ export default function EstimateScreen() {
         <View style={styles.divider} />
         <Line label="MRP total" value={formatRupees(e.mrp_total)} />
         <Line label="Subtotal" value={formatRupees(e.subtotal)} />
+        {Number(e.discount) > 0 && <Line label={`Coupon ${e.coupon_code}`} value={`− ${formatRupees(e.discount)}`} />}
         {Number(e.packing_charge) > 0 && <Line label="Packing" value={formatRupees(e.packing_charge)} />}
         <Line label="Total" value={formatRupees(e.total)} bold />
       </View>

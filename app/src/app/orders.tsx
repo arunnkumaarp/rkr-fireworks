@@ -25,7 +25,12 @@ export default function OrdersScreen() {
       data={orders.data ?? []}
       keyExtractor={(e) => e.number}
       refreshControl={<RefreshControl refreshing={orders.isRefetching} onRefresh={() => void orders.refetch()} />}
-      ListHeaderComponent={<Text style={styles.signedIn}>Logged in as {user.email}</Text>}
+      ListHeaderComponent={
+        <View style={styles.header}>
+          <Text style={styles.signedIn}>Logged in as {user.email}</Text>
+          {user.role !== 'customer' ? <Button title="Open the shop admin" onPress={() => router.replace('/admin')} /> : null}
+        </View>
+      }
       ListEmptyComponent={
         <View style={styles.empty}>
           <Text style={styles.emptyText}>
@@ -61,7 +66,8 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center' },
   container: { padding: 16, gap: 12, width: '100%', maxWidth: 640, alignSelf: 'center' },
-  signedIn: { fontFamily: fonts.text, fontSize: 15, color: colors.text, marginBottom: 4 },
+  header: { gap: 12, marginBottom: 4 },
+  signedIn: { fontFamily: fonts.text, fontSize: 15, color: colors.text },
   card: { backgroundColor: colors.surfaceAlt, borderRadius: 14, padding: 16, gap: 4 },
   pressed: { opacity: 0.8 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },

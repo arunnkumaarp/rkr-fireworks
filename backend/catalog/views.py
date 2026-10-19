@@ -24,4 +24,6 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
     def get_queryset(self):
-        return Product.objects.filter(is_active=True, category__is_active=True).select_related("category")
+        # Products whose tracked stock has run out drop off the list until restocked.
+        return (Product.objects.filter(is_active=True, category__is_active=True).exclude(stock__lte=0)
+                .select_related("category"))
