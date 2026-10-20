@@ -83,11 +83,17 @@ STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
+if os.environ.get("BLOB_READ_WRITE_TOKEN"):
+    STORAGES["default"] = {"BACKEND": "config.storage.VercelBlobStorage"}
+if os.environ.get("VERCEL"):
+    # Vercel runs no collectstatic, so WhiteNoise serves the admin's files straight from the installed apps.
+    STORAGES["staticfiles"] = {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}
+    WHITENOISE_USE_FINDERS = True
 
 CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o]
 
 if not DEBUG:
-    # Behind the host's HTTPS proxy (Render, Railway, nginx).
+    # Behind the host's HTTPS proxy (Vercel, Render, nginx).
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = os.environ.get("DJANGO_SSL_REDIRECT", "1") == "1" and not TESTING
     SESSION_COOKIE_SECURE = True

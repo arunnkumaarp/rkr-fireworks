@@ -1,0 +1,6 @@
+{
+  "installCommand": "cd app && npm ci",
+  "buildCommand": "sh scripts/build-web.sh",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/shop/:path*", "destination": "/shop/index.html" }]
+}
